@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kaiwa Quiz">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="Quiz phan xa tieng Nhat offline: 266 cau hoi tren 16 chu de (phong van BrSE + doi song hang ngay).">
+<meta name="description" content="Quiz phan xa tieng Nhat offline: 266 cau hoi tren 16 chu de (phong van BrSE + doi song hang ngay), co doc giong noi.">
 <style>
   :root{
     --bg:#f7f5f2; --card:#ffffff; --ink:#1f2430; --sub:#6b7280;
@@ -69,6 +69,19 @@
     margin-top:18px; font-size:.8rem; color:var(--sub); text-align:center;
   }
   .footer-note{margin-top:22px; font-size:.78rem; color:var(--sub); line-height:1.5;}
+  .jp-row{display:flex; align-items:flex-start; gap:8px;}
+  .jp-row .jp{flex:1;}
+  .speak-btn{
+    flex-shrink:0; width:34px; height:34px; border-radius:50%; margin-top:-2px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--chip); border:1px solid var(--border); color:var(--ink);
+    font-size:1.05rem; padding:0; cursor:pointer; line-height:1;
+  }
+  .speak-btn:hover:not(:disabled){background:var(--accent2); color:#fff; border-color:var(--accent2);}
+  .speak-btn:disabled{opacity:.35; cursor:default;}
+  .speak-btn.speaking{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+  .auto-toggle{display:flex; align-items:center; gap:6px; font-size:.82rem; color:var(--sub); cursor:pointer; user-select:none;}
+  .auto-toggle input{accent-color:var(--accent2); width:15px; height:15px;}
   kbd{
     background:var(--chip); border:1px solid var(--border); border-radius:4px;
     padding:1px 6px; font-size:.78rem;
@@ -82,7 +95,8 @@
 
   <div class="bar">
     <select id="sectionFilter"></select>
-    <div style="display:flex; gap:8px;">
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <label class="auto-toggle" id="autoSpeakLabel"><input type="checkbox" id="autoSpeakToggle"> 🔊 Tự động đọc</label>
       <button id="shuffleBtn">🔀 Xáo trộn</button>
       <span class="progress" id="progress"></span>
     </div>
@@ -92,14 +106,20 @@
     <span class="section-tag" id="sectionTag"></span>
     <div>
       <div class="role">Câu hỏi</div>
-      <div class="jp" id="q"></div>
+      <div class="jp-row">
+        <div class="jp" id="q"></div>
+        <button class="speak-btn" id="speakQBtn" title="Phát âm" aria-label="Phát âm câu hỏi">🔊</button>
+      </div>
       <div class="romaji" id="qRomaji"></div>
       <div class="meaning" id="qMeaning"></div>
     </div>
 
     <div id="answerBlock" class="answer-block hidden">
       <div class="role">Đáp án gợi ý</div>
-      <div class="jp" id="a"></div>
+      <div class="jp-row">
+        <div class="jp" id="a"></div>
+        <button class="speak-btn" id="speakABtn" title="Phát âm" aria-label="Phát âm đáp án">🔊</button>
+      </div>
       <div class="romaji" id="aRomaji"></div>
       <div class="meaning" id="aMeaning"></div>
     </div>
@@ -113,7 +133,7 @@
   <div class="streak" id="streak"></div>
 
   <div class="footer-note">
-    Phím tắt: <kbd>Space</kbd> xem đáp án, <kbd>Enter</kbd> câu tiếp theo. Dữ liệu chỉ lưu trên máy này (localStorage), không gửi đi đâu cả.
+    Phím tắt: <kbd>Space</kbd> xem đáp án, <kbd>Enter</kbd> câu tiếp theo, <kbd>S</kbd> đọc lại câu hiện tại. Bấm 🔊 để nghe phát âm, bật "Tự động đọc" để tự phát khi hiện câu/đáp án. Giọng đọc chạy ngay trên máy (Web Speech API), không gửi dữ liệu đi đâu cả.
   </div>
 </div>
 
@@ -726,7 +746,66 @@ const els = {
   revealBtn: document.getElementById('revealBtn'),
   nextBtn: document.getElementById('nextBtn'),
   streak: document.getElementById('streak'),
+  speakQBtn: document.getElementById('speakQBtn'),
+  speakABtn: document.getElementById('speakABtn'),
+  autoSpeakToggle: document.getElementById('autoSpeakToggle'),
+  autoSpeakLabel: document.getElementById('autoSpeakLabel'),
 };
+
+let currentItem = null;
+
+// ---- Đọc giọng nói (Web Speech API — chạy trên máy, không cần mạng) ----
+const speechSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+let jaVoice = null;
+
+function pickJapaneseVoice(){
+  if(!speechSupported) return;
+  const voices = speechSynthesis.getVoices();
+  jaVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ja')) || null;
+}
+
+if(speechSupported){
+  pickJapaneseVoice();
+  if('onvoiceschanged' in speechSynthesis){ speechSynthesis.onvoiceschanged = pickJapaneseVoice; }
+} else {
+  try{
+    [els.speakQBtn, els.speakABtn].forEach(b => { if(b){ b.disabled = true; b.title = 'Trình duyệt không hỗ trợ đọc giọng nói'; } });
+    if(els.autoSpeakLabel) els.autoSpeakLabel.classList.add('hidden');
+  }catch(e){}
+}
+
+function stripFurigana(text){
+  // Bỏ phần đọc trong （...） để không bị đọc lặp 2 lần (chữ Hán + furigana)
+  return (text || '').replace(/（[^（）]*）/g, '').trim();
+}
+
+function speak(text, btn){
+  if(!speechSupported || !text) return;
+  try{
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(stripFurigana(text));
+    utter.lang = 'ja-JP';
+    if(jaVoice) utter.voice = jaVoice;
+    utter.rate = 0.88;
+    if(btn){
+      utter.onstart = () => btn.classList.add('speaking');
+      utter.onend = () => btn.classList.remove('speaking');
+      utter.onerror = () => btn.classList.remove('speaking');
+    }
+    speechSynthesis.speak(utter);
+  }catch(e){ /* im lặng bỏ qua nếu trình duyệt chặn */ }
+}
+
+function loadAutoSpeakPref(){
+  try{ return localStorage.getItem('kaiwa_auto_speak') === '1'; }catch(e){ return false; }
+}
+function saveAutoSpeakPref(v){
+  try{ localStorage.setItem('kaiwa_auto_speak', v ? '1' : '0'); }catch(e){}
+}
+if(els.autoSpeakToggle){
+  els.autoSpeakToggle.checked = loadAutoSpeakPref();
+  els.autoSpeakToggle.addEventListener('change', () => saveAutoSpeakPref(els.autoSpeakToggle.checked));
+}
 
 function buildSectionOptions(){
   const sections = [...new Set(DATA.map(d => d.section))];
@@ -757,6 +836,7 @@ function render(){
   const pool = currentPool();
   if(pool.length === 0){ return; }
   const item = pool[order[idx]];
+  currentItem = item;
   els.sectionTag.textContent = item.section;
   els.q.textContent = item.q;
   els.qRomaji.textContent = item.qRomaji;
@@ -768,12 +848,14 @@ function render(){
   els.nextBtn.classList.add('hidden');
   els.revealBtn.classList.remove('hidden');
   els.progress.textContent = `Câu ${idx+1} / ${pool.length}`;
+  if(els.autoSpeakToggle && els.autoSpeakToggle.checked){ speak(item.q, els.speakQBtn); }
 }
 
 function reveal(){
   els.answerBlock.classList.remove('hidden');
   els.revealBtn.classList.add('hidden');
   els.nextBtn.classList.remove('hidden');
+  if(els.autoSpeakToggle && els.autoSpeakToggle.checked && currentItem){ speak(currentItem.a, els.speakABtn); }
 }
 
 function next(){
@@ -815,10 +897,17 @@ els.sectionFilter.addEventListener('change', startSession);
 els.shuffleBtn.addEventListener('click', startSession);
 els.revealBtn.addEventListener('click', reveal);
 els.nextBtn.addEventListener('click', next);
+if(els.speakQBtn) els.speakQBtn.addEventListener('click', () => { if(currentItem) speak(currentItem.q, els.speakQBtn); });
+if(els.speakABtn) els.speakABtn.addEventListener('click', () => { if(currentItem) speak(currentItem.a, els.speakABtn); });
 
 document.addEventListener('keydown', (e) => {
   if(e.code === 'Space'){ e.preventDefault(); if(!els.revealBtn.classList.contains('hidden')) reveal(); }
   if(e.code === 'Enter'){ if(!els.nextBtn.classList.contains('hidden')) next(); }
+  if(e.key === 's' || e.key === 'S'){
+    if(!currentItem) return;
+    if(!els.answerBlock.classList.contains('hidden')){ speak(currentItem.a, els.speakABtn); }
+    else { speak(currentItem.q, els.speakQBtn); }
+  }
 });
 
 buildSectionOptions();
