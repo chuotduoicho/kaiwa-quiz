@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luyện Kaiwa</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kaiwa Quiz">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Quiz phan xa tieng Nhat offline: 266 cau hoi tren 16 chu de (phong van BrSE + doi song hang ngay).">
+<style>
+  :root{
+    --bg:#f7f5f2; --card:#ffffff; --ink:#1f2430; --sub:#6b7280;
+    --accent:#c0392b; --accent2:#1a6b52; --border:#e5e1da; --chip:#f0ede7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#181a1f; --card:#22252c; --ink:#eceef1; --sub:#9aa0ab;
+      --accent:#ff6b5e; --accent2:#4fd1a5; --border:#33363e; --chip:#2b2e36;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#181a1f; --card:#22252c; --ink:#eceef1; --sub:#9aa0ab;
+    --accent:#ff6b5e; --accent2:#4fd1a5; --border:#33363e; --chip:#2b2e36;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; justify-content:center; padding:24px 14px 60px;
+  }
+  .wrap{width:100%; max-width:640px;}
+  h1{font-size:1.3rem; margin:0 0 4px;}
+  .desc{color:var(--sub); font-size:.85rem; margin:0 0 18px;}
+  .bar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; gap:10px; flex-wrap:wrap;
+  }
+  select, button{
+    font-size:.9rem; padding:8px 14px; border-radius:8px;
+    border:1px solid var(--border); background:var(--chip); color:var(--ink);
+    cursor:pointer;
+  }
+  button.primary{background:var(--accent); color:#fff; border:none; font-weight:600;}
+  button.secondary{background:var(--accent2); color:#fff; border:none; font-weight:600;}
+  button:disabled{opacity:.4; cursor:default;}
+  .progress{font-size:.8rem; color:var(--sub);}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:22px; min-height:260px; display:flex; flex-direction:column; gap:14px;
+  }
+  .section-tag{
+    display:inline-block; font-size:.72rem; font-weight:600; color:var(--accent2);
+    background:var(--chip); padding:3px 10px; border-radius:20px; width:fit-content;
+  }
+  .role{font-size:.75rem; color:var(--sub); text-transform:uppercase; letter-spacing:.04em;}
+  .jp{font-size:1.15rem; line-height:1.6; white-space:pre-line;}
+  .romaji{font-style:italic; color:var(--sub); font-size:.92rem; white-space:pre-line;}
+  .meaning{font-size:.95rem; white-space:pre-line;}
+  .meaning::before{content:"→ "; color:var(--accent2);}
+  .answer-block{
+    border-top:1px dashed var(--border); padding-top:14px; margin-top:4px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .hidden{display:none;}
+  .controls{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
+  .streak{
+    margin-top:18px; font-size:.8rem; color:var(--sub); text-align:center;
+  }
+  .footer-note{margin-top:22px; font-size:.78rem; color:var(--sub); line-height:1.5;}
+  kbd{
+    background:var(--chip); border:1px solid var(--border); border-radius:4px;
+    padding:1px 6px; font-size:.78rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎌 Ôn Kaiwa Tiếng Nhật — Quiz Offline</h1>
+  <p class="desc">Gồm phần phỏng vấn BrSE (<code>06-japanese-kaiwa-practice.md</code>) và 15 chủ đề đời sống hàng ngày (<code>kaiwa-practice/</code>). Không cần mạng, không cần AI — mở file này bất cứ lúc nào để luyện phản xạ.</p>
+
+  <div class="bar">
+    <select id="sectionFilter"></select>
+    <div style="display:flex; gap:8px;">
+      <button id="shuffleBtn">🔀 Xáo trộn</button>
+      <span class="progress" id="progress"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="section-tag" id="sectionTag"></span>
+    <div>
+      <div class="role">Câu hỏi</div>
+      <div class="jp" id="q"></div>
+      <div class="romaji" id="qRomaji"></div>
+      <div class="meaning" id="qMeaning"></div>
+    </div>
+
+    <div id="answerBlock" class="answer-block hidden">
+      <div class="role">Đáp án gợi ý</div>
+      <div class="jp" id="a"></div>
+      <div class="romaji" id="aRomaji"></div>
+      <div class="meaning" id="aMeaning"></div>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="revealBtn">Xem đáp án (Space)</button>
+      <button class="secondary hidden" id="nextBtn">Câu tiếp theo (Enter) →</button>
+    </div>
+  </div>
+
+  <div class="streak" id="streak"></div>
+
+  <div class="footer-note">
+    Phím tắt: <kbd>Space</kbd> xem đáp án, <kbd>Enter</kbd> câu tiếp theo. Dữ liệu chỉ lưu trên máy này (localStorage), không gửi đi đâu cả.
+  </div>
+</div>
+
+<script>
+const DATA = [
+  // Mở đầu / small talk
+  {section:"Ôn Kaiwa BrSE", q:"こんにちは。よろしくお願いします。座ってください。", qRomaji:"Konnichiwa. Yoroshiku onegaishimasu. Suwatte kudasai.", qMeaning:"Xin chào. Rất mong được hợp tác. Mời ngồi.",
+   a:"こんにちは。よろしくお願いします。", aRomaji:"Konnichiwa. Yoroshiku onegaishimasu.", aMeaning:"Xin chào. Rất mong được hợp tác ạ."},
+  {section:"Ôn Kaiwa BrSE", q:"今日はここまでどうやって来ましたか。", qRomaji:"Kyou wa koko made douyatte kimashita ka.", qMeaning:"Hôm nay bạn đến đây bằng cách nào?",
+   a:"バイクで来ました。／ 電車で来ました。", aRomaji:"Baiku de kimashita. / Densha de kimashita.", aMeaning:"Em đến bằng xe máy. / Em đến bằng tàu điện."},
+  {section:"Ôn Kaiwa BrSE", q:"緊張していますか。", qRomaji:"Kinchou shiteimasu ka.", qMeaning:"Bạn có hồi hộp không?",
+   a:"少し緊張していますが、頑張ります。", aRomaji:"Sukoshi kinchou shiteimasu ga, ganbarimasu.", aMeaning:"Em hơi hồi hộp một chút, nhưng em sẽ cố gắng."},
+
+  // Tự giới thiệu
+  {section:"Ôn Kaiwa BrSE", q:"では、自己紹介をお願いします。", qRomaji:"Dewa, jikoshoukai wo onegaishimasu.", qMeaning:"Vậy thì, mời bạn tự giới thiệu.",
+   a:"はじめまして。タイと申します。日本のワサビ会社のベトナムオフィスで働いています。仕事はフルスタックエンジニアです。経験は4年です。主にウェブサイトやシステムを作っています。日本のお客様と一緒に仕事をしています。私の目標はブリッジエンジニアになることです。日本語と技術、両方を使って、日本とベトナムのチームをつなぎたいです。どうぞよろしくお願いします。",
+   aRomaji:"Hajimemashite. Tai to moushimasu. Nihon no Wasabi kaisha no Betonamu ofisu de hataraiteimasu. Shigoto wa furusutakku enjinia desu. Keiken wa yonen desu. Omoni webusaito ya shisutemu wo tsukutteimasu. Nihon no okyakusama to issho ni shigoto wo shiteimasu. Watashi no mokuhyou wa burijji enjinia ni naru koto desu. Nihongo to gijutsu, ryouhou wo tsukatte, Nihon to Betonamu no chiimu wo tsunagitai desu. Douzo yoroshiku onegaishimasu.",
+   aMeaning:"Rất vui được gặp. Em tên là Tài. Em làm ở văn phòng VN của công ty Wasabi (Nhật). Em là fullstack engineer, 4 năm kinh nghiệm, chủ yếu làm web/hệ thống, làm việc với khách hàng Nhật. Mục tiêu của em là thành BrSE, dùng cả tiếng Nhật và kỹ thuật để kết nối team Nhật - Việt."},
+  {section:"Ôn Kaiwa BrSE", q:"プロジェクトについてもっと詳しく話してください。", qRomaji:"Purojekuto ni tsuite motto kuwashiku hanashite kudasai.", qMeaning:"Hãy kể chi tiết hơn về dự án bạn từng làm.",
+   a:"これは試験の登録システムです。受験者がオンラインで試験に申し込むことができます。私はフロントエンドを担当しました。フォームの画面と、証明書を作る機能を作りました。一番難しかったことは、フォームの項目が多くて、入力するたびに画面が遅くなったことです。そこで、新しいライブラリを使って、画面の動きを速くしました。このプロジェクトで、使いやすさを考えることの大切さを学びました。",
+   aRomaji:"Kore wa shiken no touroku shisutemu desu. Jukensha ga onrain de shiken ni moushikomu koto ga dekimasu. Watashi wa furontoendo wo tantou shimashita. Foomu no gamen to, shoumeisho wo tsukuru kinou wo tsukurimashita. Ichiban muzukashikatta koto wa, foomu no koumoku ga ookute, nyuuryoku suru tabi ni gamen ga osoku natta koto desu. Sokode, atarashii raiburari wo tsukatte, gamen no ugoki wo hayaku shimashita. Kono purojekuto de, tsukaiyasusa wo kangaeru koto no taisetsusa wo manabimashita.",
+   aMeaning:"Hệ thống đăng ký thi online. Em phụ trách frontend (form + tạo chứng chỉ). Khó nhất: form nhiều field làm màn hình chậm → dùng thư viện mới để tối ưu. Học được tầm quan trọng của UX."},
+  {section:"Ôn Kaiwa BrSE", q:"もう一つのプロジェクトについて話してください。", qRomaji:"Mou hitotsu no purojekuto ni tsuite hanashite kudasai.", qMeaning:"Kể thêm về một dự án khác đi.",
+   a:"もう一つのプロジェクトは、テキストを音声に変えるシステムです。アクセスがとても多くて、サーバーの負荷が大きいという問題がありました。私はキャッシュとキュー（順番待ちの仕組み）を使って、同じ内容を再利用し、負荷を減らしました。このプロジェクトで、大きいシステムの設計について多く学びました。",
+   aRomaji:"Mou hitotsu no purojekuto wa, tekisuto wo onsei ni kaeru shisutemu desu. Akusesu ga totemo ookute, saabaa no fuka ga ookii to iu mondai ga arimashita. Watashi wa kyasshu to kyuu (junbanmachi no shikumi) wo tsukatte, onaji naiyou wo sairiyou shi, fuka wo herashimashita. Kono purojekuto de, ookii shisutemu no sekkei ni tsuite ooku manabimashita.",
+   aMeaning:"Hệ thống chuyển văn bản thành giọng nói, traffic cao gây tải server nặng. Em dùng cache + queue để giảm tải. Học được nhiều về thiết kế hệ thống lớn."},
+
+  // Mục 4 Q&A
+  {section:"Ôn Kaiwa BrSE", q:"今、どんな仕事をしていますか。", qRomaji:"Ima, donna shigoto wo shiteimasu ka.", qMeaning:"Hiện tại bạn đang làm công việc như thế nào?",
+   a:"フロントエンドとバックエンド、両方を担当しています。", aRomaji:"Furontoendo to bakkuendo, ryouhou wo tantou shiteimasu.", aMeaning:"Em phụ trách cả frontend và backend."},
+  {section:"Ôn Kaiwa BrSE", q:"会社はどこにありますか。", qRomaji:"Kaisha wa doko ni arimasu ka.", qMeaning:"Công ty ở đâu?",
+   a:"ハノイにあります。", aRomaji:"Hanoi ni arimasu.", aMeaning:"Ở Hà Nội ạ."},
+  {section:"Ôn Kaiwa BrSE", q:"毎日何時から何時まで働きますか。", qRomaji:"Mainichi nanji kara nanji made hatarakimasu ka.", qMeaning:"Hàng ngày bạn làm việc từ mấy giờ đến mấy giờ?",
+   a:"朝9時から夕方6時まで働きます。", aRomaji:"Asa kuji kara yuugata rokuji made hatarakimasu.", aMeaning:"Em làm từ 9 giờ sáng đến 6 giờ chiều."},
+  {section:"Ôn Kaiwa BrSE", q:"日本のお客様とどうやって連絡しますか。", qRomaji:"Nihon no okyakusama to douyatte renraku shimasu ka.", qMeaning:"Bạn liên lạc với khách hàng Nhật bằng cách nào?",
+   a:"メールとコムトーで連絡します。", aRomaji:"Meeru to comutoo de renraku shimasu.", aMeaning:"Em liên lạc qua email và thông qua comtor ạ."},
+  {section:"Ôn Kaiwa BrSE", q:"どんなプロジェクトを担当したことがありますか。", qRomaji:"Donna purojekuto wo tantou shita koto ga arimasu ka.", qMeaning:"Bạn từng phụ trách dự án như thế nào?",
+   a:"試験の登録システムを担当したことがあります。フォームの入力や画面の表示を作りました。", aRomaji:"Shiken no touroku shisutemu wo tantou shita koto ga arimasu. Foomu no nyuuryoku ya gamen no hyouji wo tsukurimashita.", aMeaning:"Em từng phụ trách hệ thống đăng ký thi. Em đã làm phần nhập liệu form và hiển thị màn hình."},
+  {section:"Ôn Kaiwa BrSE", q:"チームには何人いますか。", qRomaji:"Chiimu ni wa nannin imasu ka.", qMeaning:"Team của bạn có bao nhiêu người?",
+   a:"私のチームには4人います。フロントエンドが1人、バックエンドが1人、テスターが1人、BAが1人です。", aRomaji:"Watashi no chiimu ni wa yonin imasu. Furontoendo ga hitori, bakkuendo ga hitori, tesutaa ga hitori, BA ga hitori desu.", aMeaning:"Team em có 4 người: 1 frontend, 1 backend, 1 tester và 1 BA."},
+  {section:"Ôn Kaiwa BrSE", q:"どんな技術を使っていますか。", qRomaji:"Donna gijutsu wo tsukatteimasu ka.", qMeaning:"Bạn đang dùng công nghệ gì?",
+   a:"フロントエンドはReactとNext.js、バックエンドはNode.jsとNestJSを使っています。", aRomaji:"Furontoendo wa Riakuto Nekusuto jeiesu, bakkuendo wa Nodojeiesu to Nesutojeiesu wo tsukatteimasu.", aMeaning:"Frontend em dùng React và Next.js, backend em dùng Node.js và NestJS."},
+  {section:"Ôn Kaiwa BrSE", q:"どうしてプログラミングを勉強し始めましたか。", qRomaji:"Doushite puroguramingu wo benkyou shihajimemashita ka.", qMeaning:"Tại sao bạn bắt đầu học lập trình?",
+   a:"何かを自分の手で作ることが好きだったからです。", aRomaji:"Nanika wo jibun no te de tsukuru koto ga suki datta kara desu.", aMeaning:"Vì em thích tự tay tạo ra thứ gì đó."},
+  {section:"Ôn Kaiwa BrSE", q:"今の仕事で一番好きな部分は何ですか。", qRomaji:"Ima no shigoto de ichiban suki na bubun wa nan desu ka.", qMeaning:"Phần bạn thích nhất trong công việc hiện tại là gì?",
+   a:"問題を見つけて、解決する瞬間が一番好きです。", aRomaji:"Mondai wo mitsukete, kaiketsu suru shunkan ga ichiban suki desu.", aMeaning:"Em thích nhất khoảnh khắc tìm ra vấn đề và giải quyết được nó."},
+  {section:"Ôn Kaiwa BrSE", q:"今の会社で何を学びましたか。", qRomaji:"Ima no kaisha de nani wo manabimashita ka.", qMeaning:"Bạn đã học được gì ở công ty hiện tại?",
+   a:"技術だけではありません。お客様と話すことも大切だと学びました。", aRomaji:"Gijutsu dake de wa arimasen. Okyakusama to hanasu koto mo taisetsu da to manabimashita.", aMeaning:"Không chỉ có kỹ thuật thôi. Em học được rằng nói chuyện với khách hàng cũng quan trọng."},
+  {section:"Ôn Kaiwa BrSE", q:"日本語の勉強はいつから始めましたか。", qRomaji:"Nihongo no benkyou wa itsu kara hajimemashita ka.", qMeaning:"Bạn bắt đầu học tiếng Nhật từ khi nào?",
+   a:"（実際の期間）から始めました。独学で勉強しています。", aRomaji:"(điền thời gian thật) kara hajimemashita. Dokugaku de benkyou shiteimasu.", aMeaning:"Em bắt đầu học từ ___ (ví dụ: 半年前 nửa năm trước, 1年前 1 năm trước). Em tự học ạ."},
+
+  // Mục 5
+  {section:"Ôn Kaiwa BrSE", q:"どうしてブリッジエンジニアになりたいですか。", qRomaji:"Doushite burijji enjinia ni naritai desu ka.", qMeaning:"Tại sao bạn muốn trở thành BrSE?",
+   a:"技術だけでなく、日本とベトナムのチームをつなぐ仕事がしたいからです。", aRomaji:"Gijutsu dake de naku, Nihon to Betonamu no chiimu wo tsunagu shigoto ga shitai kara desu.", aMeaning:"Vì em không chỉ muốn làm kỹ thuật, mà còn muốn làm công việc kết nối team Nhật Bản và Việt Nam."},
+  {section:"Ôn Kaiwa BrSE", q:"どうして日本で働きたいですか。", qRomaji:"Doushite Nihon de hatarakitai desu ka.", qMeaning:"Tại sao bạn muốn làm việc ở Nhật?",
+   a:"日本の仕事の文化が好きです。丁寧で正確だと思います。", aRomaji:"Nihon no shigoto no bunka ga suki desu. Teinei de seikaku da to omoimasu.", aMeaning:"Em thích văn hóa làm việc của Nhật. Em nghĩ họ tỉ mỉ và chính xác."},
+  {section:"Ôn Kaiwa BrSE", q:"ブリッジエンジニアとシステムエンジニアの違いは何だと思いますか。", qRomaji:"Burijji enjinia to shisutemu enjinia no chigai wa nan da to omoimasu ka.", qMeaning:"Bạn nghĩ BrSE khác SE thế nào?",
+   a:"システムエンジニアは主に技術の仕事をします。ブリッジエンジニアは主にお客様とチームの間のコミュニケーションを担当します。", aRomaji:"Shisutemu enjinia wa omoni gijutsu no shigoto wo shimasu. Burijji enjinia wa omoni okyakusama to chiimu no aida no komyunikeeshon wo tantou shimasu.", aMeaning:"SE chủ yếu làm công việc kỹ thuật. BrSE chủ yếu phụ trách giao tiếp giữa khách hàng và team."},
+  {section:"Ôn Kaiwa BrSE", q:"将来の目標は何ですか。", qRomaji:"Shourai no mokuhyou wa nan desu ka.", qMeaning:"Mục tiêu tương lai của bạn là gì?",
+   a:"日本語が上手になって、日本とベトナムの架け橋になりたいです。", aRomaji:"Nihongo ga jouzu ni natte, Nihon to Betonamu no kakehashi ni naritai desu.", aMeaning:"Em muốn giỏi tiếng Nhật hơn và trở thành cầu nối giữa Nhật Bản và Việt Nam."},
+  {section:"Ôn Kaiwa BrSE", q:"このプログラムに参加して、何を学びたいですか。", qRomaji:"Kono puroguramu ni sanka shite, nani wo manabitai desu ka.", qMeaning:"Tham gia chương trình này, bạn muốn học gì?",
+   a:"日本語のコミュニケーション力を学びたいです。", aRomaji:"Nihongo no komyunikeeshon-ryoku wo manabitai desu.", aMeaning:"Em muốn học khả năng giao tiếp tiếng Nhật."},
+  {section:"Ôn Kaiwa BrSE", q:"日本で働くのは大変かもしれませんが、大丈夫ですか。", qRomaji:"Nihon de hataraku no wa taihen kamoshiremasen ga, daijoubu desu ka.", qMeaning:"Làm việc ở Nhật có thể sẽ vất vả, bạn có ổn không?",
+   a:"はい、大丈夫です。大変なことがあっても、頑張りたいです。", aRomaji:"Hai, daijoubu desu. Taihen na koto ga atte mo, ganbaritai desu.", aMeaning:"Vâng, em ổn ạ. Dù có khó khăn, em vẫn muốn cố gắng."},
+  {section:"Ôn Kaiwa BrSE", q:"日本でどのくらい働きたいですか。", qRomaji:"Nihon de dono kurai hatarakitai desu ka.", qMeaning:"Bạn muốn làm việc ở Nhật trong bao lâu?",
+   a:"長く働きたいです。日本で経験を積みたいです。", aRomaji:"Nagaku hatarakitai desu. Nihon de keiken wo tsumitai desu.", aMeaning:"Em muốn làm việc lâu dài. Em muốn tích lũy kinh nghiệm ở Nhật."},
+  {section:"Ôn Kaiwa BrSE", q:"ベトナムに戻る予定はありますか。", qRomaji:"Betonamu ni modoru yotei wa arimasu ka.", qMeaning:"Bạn có dự định quay về Việt Nam không?",
+   a:"今はまだ考えていません。まずは日本で経験を積みたいです。", aRomaji:"Ima wa mada kangaeteimasen. Mazu wa Nihon de keiken wo tsumitai desu.", aMeaning:"Hiện tại em chưa nghĩ tới. Trước tiên em muốn tích lũy kinh nghiệm ở Nhật."},
+
+  // Mục 6
+  {section:"Ôn Kaiwa BrSE", q:"趣味は何ですか。", qRomaji:"Shumi wa nan desu ka.", qMeaning:"Sở thích của bạn là gì?",
+   a:"音楽を聞くことと、ピックルボールをすることです。", aRomaji:"Ongaku wo kiku koto to, pikkuru booru wo suru koto desu.", aMeaning:"Nghe nhạc và chơi Pickleball ạ."},
+  {section:"Ôn Kaiwa BrSE", q:"週末は何をしますか。／ 休みの日は何が好きですか。", qRomaji:"Shuumatsu wa nani wo shimasu ka. / Yasumi no hi wa nani ga suki desu ka.", qMeaning:"Cuối tuần bạn làm gì? / Ngày nghỉ bạn thích làm gì?",
+   a:"家でゆっくり休んだり、友達と会ったりします。", aRomaji:"Ie de yukkuri yasundari, tomodachi to attari shimasu.", aMeaning:"Em nghỉ ngơi ở nhà, hoặc gặp bạn bè."},
+  {section:"Ôn Kaiwa BrSE", q:"好きな食べ物は何ですか。", qRomaji:"Suki na tabemono wa nan desu ka.", qMeaning:"Món ăn bạn thích là gì?",
+   a:"フォー（ベトナムの麺料理）が好きです。", aRomaji:"Foo (Betonamu no men ryouri) ga suki desu.", aMeaning:"Em thích phở (món mì của Việt Nam)."},
+  {section:"Ôn Kaiwa BrSE", q:"日本の食べ物で好きなものはありますか。", qRomaji:"Nihon no tabemono de suki na mono wa arimasu ka.", qMeaning:"Có món ăn Nhật nào bạn thích không?",
+   a:"はい、ラーメンと寿司が好きです。", aRomaji:"Hai, raamen to sushi ga suki desu.", aMeaning:"Vâng, em thích ramen và sushi."},
+  {section:"Ôn Kaiwa BrSE", q:"スポーツをしますか。", qRomaji:"Supootsu wo shimasu ka.", qMeaning:"Bạn có chơi thể thao không?",
+   a:"はい、最近ピックルボールにはまっています。健康のために週末によくやります。", aRomaji:"Hai, saikin pikkuru booru ni hamatteimasu. Kenkou no tame ni shuumatsu ni yoku yarimasu.", aMeaning:"Vâng, gần đây em đang mê Pickleball. Em thường chơi vào cuối tuần vì sức khỏe."},
+  {section:"Ôn Kaiwa BrSE", q:"ピックルボールとは何ですか。", qRomaji:"Pikkuru booru to wa nan desu ka.", qMeaning:"Pickleball là gì vậy?",
+   a:"テニスとバドミントンに似ているスポーツです。小さいコートで、プラスチックのボールを使います。", aRomaji:"Tenisu to badominton ni niteiru supootsu desu. Chiisai kooto de, purasuchikku no booru wo tsukaimasu.", aMeaning:"Đây là môn thể thao giống quần vợt và cầu lông. Chơi trên sân nhỏ, dùng bóng nhựa."},
+  {section:"Ôn Kaiwa BrSE", q:"兄弟はいますか。", qRomaji:"Kyoudai wa imasu ka.", qMeaning:"Bạn có anh chị em không?",
+   a:"はい、姉が二人います。", aRomaji:"Hai, ane ga futari imasu.", aMeaning:"Vâng, em có 2 chị gái ạ."},
+  {section:"Ôn Kaiwa BrSE", q:"日本へ行ったことがありますか。", qRomaji:"Nihon e itta koto ga arimasu ka.", qMeaning:"Bạn từng đến Nhật chưa?",
+   a:"いいえ、まだありません。でも、いつか行ってみたいです。", aRomaji:"Iie, mada arimasen. Demo, itsuka itte mitai desu.", aMeaning:"Chưa ạ. Nhưng em muốn đến đó một ngày nào đó."},
+  {section:"Ôn Kaiwa BrSE", q:"日本のどんな所に行ってみたいですか。", qRomaji:"Nihon no donna tokoro ni itte mitai desu ka.", qMeaning:"Bạn muốn đến nơi nào ở Nhật?",
+   a:"東京に行ってみたいです。会社があるし、賑やかだと聞いたことがあるからです。", aRomaji:"Toukyou ni itte mitai desu. Kaisha ga aru shi, nigiyaka da to kiita koto ga aru kara desu.", aMeaning:"Em muốn đến Tokyo. Vì em nghe nói ở đó có nhiều công ty và nhộn nhịp."},
+  {section:"Ôn Kaiwa BrSE", q:"好きな日本のアニメやドラマはありますか。", qRomaji:"Suki na Nihon no anime ya dorama wa arimasu ka.", qMeaning:"Bạn có thích anime hay phim Nhật nào không?",
+   a:"はい、ドラえもんとコナンが好きです。", aRomaji:"Hai, Doraemon to Konan ga suki desu.", aMeaning:"Vâng, em thích Doraemon và Conan."},
+
+  // Mục 7
+  {section:"Ôn Kaiwa BrSE", q:"プロジェクトの進捗はどうやって報告しますか。", qRomaji:"Purojekuto no shinchoku wa douyatte houkoku shimasu ka.", qMeaning:"Bạn báo cáo tiến độ dự án như thế nào?",
+   a:"毎週、PMに進捗を報告します。問題があったら、すぐに伝えます。", aRomaji:"Maishuu, PM ni shinchoku wo houkoku shimasu. Mondai ga attara, sugu ni tsutaemasu.", aMeaning:"Mỗi tuần em báo cáo tiến độ cho PM. Nếu có vấn đề, em báo ngay lập tức."},
+  {section:"Ôn Kaiwa BrSE", q:"バグを見つけたら、どうしますか。", qRomaji:"Bagu wo mitsuketara, dou shimasu ka.", qMeaning:"Nếu phát hiện bug thì bạn làm gì?",
+   a:"まずバグの原因を調べます。それから、チームに報告して、修正します。", aRomaji:"Mazu bagu no gen'in wo shirabemasu. Sorekara, chiimu ni houkoku shite, shuusei shimasu.", aMeaning:"Đầu tiên em tìm nguyên nhân bug. Sau đó báo cho team và sửa lỗi."},
+  {section:"Ôn Kaiwa BrSE", q:"仕様や要望がよく分からないとき、どうしますか。", qRomaji:"Shiyou ya youbou ga yoku wakaranai toki, dou shimasu ka.", qMeaning:"Khi không hiểu rõ spec hoặc yêu cầu thì bạn làm gì?",
+   a:"分からないままにしないで、すぐにコムトーかBAに確認します。", aRomaji:"Wakaranai mama ni shinaide, sugu ni comutoo ka BA ni kakunin shimasu.", aMeaning:"Em không để tình trạng không hiểu, mà xác nhận ngay với comtor hoặc BA."},
+  {section:"Ôn Kaiwa BrSE", q:"チームで意見が違うとき、どうしますか。", qRomaji:"Chiimu de iken ga chigau toki, dou shimasu ka.", qMeaning:"Khi ý kiến trong team khác nhau thì bạn làm gì?",
+   a:"まず相手の意見をよく聞きます。それから、自分の意見も説明します。", aRomaji:"Mazu aite no iken wo yoku kikimasu. Sorekara, jibun no iken mo setsumei shimasu.", aMeaning:"Đầu tiên em lắng nghe kỹ ý kiến của đối phương. Sau đó em cũng giải thích ý kiến của mình."},
+  {section:"Ôn Kaiwa BrSE", q:"締め切りに間に合わないかもしれないとき、どうしますか。", qRomaji:"Shimekiri ni maniawanai kamoshirenai toki, dou shimasu ka.", qMeaning:"Khi có thể không kịp deadline thì bạn làm gì?",
+   a:"できるだけ早くPMに伝えます。", aRomaji:"Dekiru dake hayaku PM ni tsutaemasu.", aMeaning:"Em báo cho trưởng nhóm càng sớm càng tốt."},
+  {section:"Ôn Kaiwa BrSE", q:"技術が分からない人に、どうやって説明しますか。", qRomaji:"Gijutsu ga wakaranai hito ni, douyatte setsumei shimasu ka.", qMeaning:"Bạn giải thích kỹ thuật cho người không rành tech như thế nào?",
+   a:"難しい言葉を使わないで、簡単な例を使って説明します。", aRomaji:"Muzukashii kotoba wo tsukawanaide, kantan na rei wo tsukatte setsumei shimasu.", aMeaning:"Em không dùng từ khó, mà dùng ví dụ đơn giản để giải thích."},
+  {section:"Ôn Kaiwa BrSE", q:"仕様を急に変えてほしいと言われたら、どうしますか。", qRomaji:"Shiyou wo kyuu ni kaete hoshii to iwaretara, dou shimasu ka.", qMeaning:"Nếu có người đột nhiên muốn thay đổi spec thì bạn làm gì?",
+   a:"まず変更の理由と影響を確認します。それから、チームと相談してから、返事します。", aRomaji:"Mazu henkou no riyuu to eikyou wo kakunin shimasu. Sorekara, chiimu to soudan shite kara, henji shimasu.", aMeaning:"Đầu tiên em xác nhận lý do thay đổi và mức độ ảnh hưởng. Sau đó, trao đổi với team rồi mới phản hồi."},
+  {section:"Ôn Kaiwa BrSE", q:"有給休暇を取りたいとき、どう伝えますか。", qRomaji:"Yuukyuu kyuuka wo toritai toki, dou tsutaemasu ka.", qMeaning:"Khi muốn xin nghỉ phép thì bạn báo như thế nào?",
+   a:"早めに上司に伝えます。理由も説明します。", aRomaji:"Hayame ni joushi ni tsutaemasu. Riyuu mo setsumei shimasu.", aMeaning:"Em báo cho cấp trên sớm. Em cũng giải thích lý do."},
+  {section:"Ôn Kaiwa BrSE", q:"残業についてどう思いますか。", qRomaji:"Zangyou ni tsuite dou omoimasu ka.", qMeaning:"Bạn nghĩ gì về việc làm thêm giờ (tăng ca)?",
+   a:"必要なときはできますが、いつも残業するのは良くないと思います。計画をちゃんと立てることが大切だと思います。", aRomaji:"Hitsuyou na toki wa dekimasu ga, itsumo zangyou suru no wa yokunai to omoimasu. Keikaku wo chanto tateru koto ga taisetsu da to omoimasu.", aMeaning:"Khi cần thiết em có thể làm, nhưng em nghĩ lúc nào cũng tăng ca thì không tốt. Em nghĩ lập kế hoạch cho tốt mới là quan trọng."},
+  {section:"Ôn Kaiwa BrSE", q:"厳しいフィードバックをもらったら、どうしますか。", qRomaji:"Kibishii fiidobakku wo moraretara, dou shimasu ka.", qMeaning:"Nếu nhận feedback gay gắt thì bạn làm gì?",
+   a:"まず落ち着いて、よく聞きます。それから、どう改善できるか考えます。", aRomaji:"Mazu ochitsuite, yoku kikimasu. Sorekara, dou kaizen dekiru ka kangaemasu.", aMeaning:"Đầu tiên em bình tĩnh và lắng nghe kỹ. Sau đó, em suy nghĩ xem cải thiện thế nào."},
+  {section:"Ôn Kaiwa BrSE", q:"新しい技術をどうやって学びますか。", qRomaji:"Atarashii gijutsu wo douyatte manabimasu ka.", qMeaning:"Bạn học công nghệ mới bằng cách nào?",
+   a:"ドキュメントを読んで勉強します。", aRomaji:"Dokyumento wo yonde benkyou shimasu.", aMeaning:"Em đọc tài liệu để học."},
+
+  // Mục 8
+  {section:"Ôn Kaiwa BrSE", q:"あなたの弱点は何ですか。", qRomaji:"Anata no jakuten wa nan desu ka.", qMeaning:"Điểm yếu của bạn là gì?",
+   a:"日本語を聞くことと話すことがまだ苦手です。でも、毎日少しずつ練習しています。", aRomaji:"Nihongo wo kiku koto to hanasu koto ga mada nigate desu. Demo, mainichi sukoshizutsu renshuu shiteimasu.", aMeaning:"Em vẫn còn yếu ở việc nghe và nói tiếng Nhật. Nhưng em đang luyện tập mỗi ngày một ít."},
+  {section:"Ôn Kaiwa BrSE", q:"あなたの強みは何ですか。", qRomaji:"Anata no tsuyomi wa nan desu ka.", qMeaning:"Điểm mạnh của bạn là gì?",
+   a:"問題があっても、諦めません。最後まで頑張ります。", aRomaji:"Mondai ga attemo, akiramemasen. Saigo made ganbarimasu.", aMeaning:"Dù có vấn đề, em không bỏ cuộc. Em cố gắng đến cùng."},
+  {section:"Ôn Kaiwa BrSE", q:"仕事でストレスを感じるとき、どうしますか。", qRomaji:"Shigoto de sutoresu wo kanjiru toki, dou shimasu ka.", qMeaning:"Khi cảm thấy stress trong công việc thì bạn làm gì?",
+   a:"少し休んでから、また考えます。一人で悩まないで、チームに相談します。", aRomaji:"Sukoshi yasunde kara, mata kangaemasu. Hitori de nayamanaide, chiimu ni soudan shimasu.", aMeaning:"Em nghỉ một chút rồi suy nghĩ lại. Em không tự mình lo lắng một mình mà trao đổi với team."},
+  {section:"Ôn Kaiwa BrSE", q:"どうしてこのプログラムに応募しましたか。", qRomaji:"Doushite kono puroguramu ni oubo shimashita ka.", qMeaning:"Tại sao bạn ứng tuyển chương trình này?",
+   a:"日本語をもっと勉強して、ブリッジエンジニアになりたいからです。", aRomaji:"Nihongo wo motto benkyou shite, burijji enjinia ni naritai kara desu.", aMeaning:"Vì em muốn học tiếng Nhật nhiều hơn để trở thành BrSE."},
+  {section:"Ôn Kaiwa BrSE", q:"他の候補者と比べて、あなたの強みは何ですか。", qRomaji:"Hoka no kouhosha to kurabete, anata no tsuyomi wa nan desu ka.", qMeaning:"So với các ứng viên khác, điểm mạnh của bạn là gì?",
+   a:"フロントエンドとバックエンド、両方の経験があります。それに、日本のお客様と働いた経験もあります。", aRomaji:"Furontoendo to bakkuendo, ryouhou no keiken ga arimasu. Sore ni, Nihon no okyakusama to hataraita keiken mo arimasu.", aMeaning:"Em có kinh nghiệm cả frontend và backend. Ngoài ra, em cũng từng làm việc với khách hàng Nhật."},
+  {section:"Ôn Kaiwa BrSE", q:"失敗した経験を教えてください。", qRomaji:"Shippai shita keiken wo oshiete kudasai.", qMeaning:"Hãy kể về một lần bạn thất bại.",
+   a:"前、仕事が忙しくて、日本語の勉強を止めてしまったことがあります。それから、毎日少しずつ勉強するようにしました。", aRomaji:"Mae, shigoto ga isogashikute, nihongo no benkyou wo yamete shimatta koto ga arimasu. Sorekara, mainichi sukoshizutsu benkyou suru you ni shimashita.", aMeaning:"Trước đây vì công việc bận nên em từng bỏ học tiếng Nhật giữa chừng. Sau đó em đã học đều đặn mỗi ngày một ít."},
+  {section:"Ôn Kaiwa BrSE", q:"プレッシャーの中で、どうやって仕事をしますか。", qRomaji:"Puresshaa no naka de, douyatte shigoto wo shimasu ka.", qMeaning:"Bạn làm việc thế nào khi ở trong áp lực?",
+   a:"タスクを小さく分けて、一つずつ終わらせます。焦らないことが大切だと思います。", aRomaji:"Tasuku wo chiisaku wakete, hitotsu zutsu owarasemasu. Aseranai koto ga taisetsu da to omoimasu.", aMeaning:"Em chia task nhỏ ra và hoàn thành từng cái một. Em nghĩ không hoảng loạn là điều quan trọng."},
+  {section:"Ôn Kaiwa BrSE", q:"5年後、どんなエンジニアになっていたいですか。", qRomaji:"Gonengo, donna enjinia ni natteitai desu ka.", qMeaning:"5 năm nữa bạn muốn trở thành kỹ sư như thế nào?",
+   a:"技術もコミュニケーションも両方できるブリッジエンジニアになりたいです。", aRomaji:"Gijutsu mo komyunikeeshon mo ryouhou dekiru burijji enjinia ni naritai desu.", aMeaning:"Em muốn trở thành một BrSE làm được cả kỹ thuật lẫn giao tiếp."},
+
+  // Mục 9
+  {section:"Ôn Kaiwa BrSE", q:"FPTジャパンをどこで知りましたか。", qRomaji:"FPT Japan wo doko de shirimashita ka.", qMeaning:"Bạn biết đến FPT Japan qua đâu?",
+   a:"会社の先輩から聞きました。それから、インターネットでも調べました。", aRomaji:"Kaisha no senpai kara kikimashita. Sorekara, intaanetto demo shirabemashita.", aMeaning:"Em biết qua đàn anh ở công ty. Sau đó, em cũng tìm hiểu trên internet."},
+  {section:"Ôn Kaiwa BrSE", q:"FPTジャパンはどんな会社だと思いますか。", qRomaji:"FPT Japan wa donna kaisha da to omoimasu ka.", qMeaning:"Bạn nghĩ FPT Japan là công ty như thế nào?",
+   a:"日本のお客様のためにシステムを作る会社だと思います。", aRomaji:"Nihon no okyakusama no tame ni shisutemu wo tsukuru kaisha da to omoimasu.", aMeaning:"Em nghĩ đây là công ty làm hệ thống cho khách hàng Nhật."},
+  {section:"Ôn Kaiwa BrSE", q:"どうして「Go Japan Skill Upプログラム」に応募しましたか。", qRomaji:"Doushite \"Go Japan Skill Up puroguramu\" ni oubo shimashita ka.", qMeaning:"Tại sao bạn ứng tuyển chương trình \"Go Japan Skill Up\"?",
+   a:"このプログラムで日本語をもっと勉強して、ブリッジエンジニアになりたいからです。", aRomaji:"Kono puroguramu de nihongo wo motto benkyou shite, burijji enjinia ni naritai kara desu.", aMeaning:"Vì em muốn học tiếng Nhật nhiều hơn và trở thành BrSE qua chương trình này."},
+  {section:"Ôn Kaiwa BrSE", q:"大学はどこを卒業しましたか。", qRomaji:"Daigaku wa doko wo sotsugyou shimashita ka.", qMeaning:"Bạn tốt nghiệp đại học nào?",
+   a:"FPT大学を卒業しました。専攻はソフトウェアエンジニアリングです。", aRomaji:"FPT daigaku wo sotsugyou shimashita. Senkou wa sofutowea enjiniaringu desu.", aMeaning:"Em tốt nghiệp Đại học FPT. Chuyên ngành Kỹ thuật phần mềm."},
+  {section:"Ôn Kaiwa BrSE", q:"FPT大学とFPTジャパンは関係がありますか。", qRomaji:"FPT daigaku to FPT Japan wa kankei ga arimasu ka.", qMeaning:"Đại học FPT và FPT Japan có liên quan gì không?",
+   a:"はい、同じFPTグループです。でも、大学と会社は別です。", aRomaji:"Hai, onaji FPT guruupu desu. Demo, daigaku to kaisha wa betsu desu.", aMeaning:"Vâng, cùng là Tập đoàn FPT. Nhưng trường đại học và công ty khác nhau."},
+  {section:"Ôn Kaiwa BrSE", q:"FPTジャパンで働いたら、どんな仕事をしたいですか。", qRomaji:"FPT Japan de hataraitara, donna shigoto wo shitai desu ka.", qMeaning:"Nếu làm việc ở FPT Japan, bạn muốn làm công việc gì?",
+   a:"ブリッジエンジニアとして働きたいです。技術も日本語も使いたいです。", aRomaji:"Burijji enjinia toshite hatarakitai desu. Gijutsu mo nihongo mo tsukaitai desu.", aMeaning:"Em muốn làm việc với vai trò BrSE. Em muốn dùng cả kỹ thuật và tiếng Nhật."},
+  {section:"Ôn Kaiwa BrSE", q:"他にどんな会社を受けましたか。", qRomaji:"Hoka ni donna kaisha wo ukemashita ka.", qMeaning:"Bạn còn ứng tuyển công ty nào khác không?",
+   a:"すみません、それはまだ話せません。今はこのプログラムに集中したいです。", aRomaji:"Sumimasen, sore wa mada hanasemasen. Ima wa kono puroguramu ni shuuchuu shitai desu.", aMeaning:"Xin lỗi, phần đó em chưa thể nói. Hiện tại em muốn tập trung vào chương trình này."},
+  {section:"Ôn Kaiwa BrSE", q:"なぜ他の会社ではなくFPTジャパンを選びましたか。", qRomaji:"Naze hoka no kaisha de wa naku FPT Japan wo erabimashita ka.", qMeaning:"Tại sao bạn chọn FPT Japan chứ không phải công ty khác?",
+   a:"日本語と技術を勉強できるプログラムがあるからです。それに、昔FPT大学で勉強していたので、同じ文化を感じます。", aRomaji:"Nihongo to gijutsu wo benkyou dekiru puroguramu ga aru kara desu. Sore ni, mukashi FPT daigaku de benkyou shiteita node, onaji bunka wo kanjimasu.", aMeaning:"Vì có chương trình giúp em học tiếng Nhật và kỹ thuật. Ngoài ra, hồi xưa em từng học ở Đại học FPT nên cảm thấy cùng văn hóa."},
+  {section:"Ôn Kaiwa BrSE", q:"入社したら、いつ日本に行けますか。", qRomaji:"Nyuusha shitara, itsu Nihon ni ikemasu ka.", qMeaning:"Sau khi vào công ty, khi nào bạn có thể sang Nhật?",
+   a:"来年行きたいです。それまで、日本語をもっと勉強します。", aRomaji:"Rainen ikitai desu. Sore made, nihongo wo motto benkyou shimasu.", aMeaning:"Em muốn đi vào năm sau. Trước đó, em sẽ học tiếng Nhật nhiều hơn."},
+  {section:"Ôn Kaiwa BrSE", q:"FPTジャパンの企業文化についてどう思いますか。", qRomaji:"FPT Japan no kigyou bunka ni tsuite dou omoimasu ka.", qMeaning:"Bạn nghĩ gì về văn hóa doanh nghiệp của FPT Japan?",
+   a:"大きい会社で、プロフェッショナルだと思います。", aRomaji:"Ookii kaisha de, purofesshonaru da to omoimasu.", aMeaning:"Em nghĩ đây là công ty lớn và chuyên nghiệp."},
+
+  // Mục 10 + kết thúc
+  {section:"Ôn Kaiwa BrSE", q:"何か質問はありますか。", qRomaji:"Nanika shitsumon wa arimasu ka.", qMeaning:"Bạn có câu hỏi gì không?",
+   a:"研修はどのくらいの期間ですか。", aRomaji:"Kenshuu wa dono kurai no kikan desu ka.", aMeaning:"Thời gian đào tạo khoảng bao lâu ạ?"},
+  {section:"Ôn Kaiwa BrSE", q:"今日はありがとうございました。", qRomaji:"Kyou wa arigatou gozaimashita.", qMeaning:"Cảm ơn bạn hôm nay.",
+   a:"こちらこそ、ありがとうございました。よろしくお願いします。", aRomaji:"Kochira koso, arigatou gozaimashita. Yoroshiku onegaishimasu.", aMeaning:"Em mới là người cảm ơn ạ. Rất mong được xem xét."},
+
+  // ===== ĐỜI SỐNG HÀNG NGÀY (kaiwa-practice/) =====
+
+  // 01 - Tự giới thiệu & sở thích
+  {section:"Tự giới thiệu & sở thích", q:"ご出身はどちらですか。", qRomaji:"Go-shusshin wa dochira desu ka.", qMeaning:"Bạn quê ở đâu vậy?",
+   a:"私はベトナムのハノイ出身です。", aRomaji:"Watashi wa Betonamu no Hanoi shusshin desu.", aMeaning:"Tôi quê ở Hà Nội, Việt Nam."},
+  {section:"Tự giới thiệu & sở thích", q:"今はどこに住んでいますか。", qRomaji:"Ima wa doko ni sunde imasu ka.", qMeaning:"Bây giờ bạn đang sống ở đâu?",
+   a:"今はホーチミン市に住んでいます。", aRomaji:"Ima wa Hoochimin-shi ni sunde imasu.", aMeaning:"Bây giờ tôi đang sống ở Thành phố Hồ Chí Minh."},
+  {section:"Tự giới thiệu & sở thích", q:"田舎と都会、どちらが好きですか。", qRomaji:"Inaka to tokai, dochira ga suki desu ka.", qMeaning:"Bạn thích vùng quê hay thành phố hơn?",
+   a:"静かなので、田舎の方が好きです。", aRomaji:"Shizuka na node, inaka no hou ga suki desu.", aMeaning:"Vì yên tĩnh nên tôi thích vùng quê hơn."},
+  {section:"Tự giới thiệu & sở thích", q:"ご自分の性格はどう思いますか。", qRomaji:"Go-jibun no seikaku wa dou omoimasu ka.", qMeaning:"Bạn nghĩ tính cách của mình thế nào?",
+   a:"明るくて、真面目な性格だと思います。", aRomaji:"Akarukute, majime na seikaku da to omoimasu.", aMeaning:"Tôi nghĩ mình là người vui vẻ và nghiêm túc."},
+  {section:"Tự giới thiệu & sở thích", q:"趣味は何ですか。", qRomaji:"Shumi wa nan desu ka.", qMeaning:"Sở thích của bạn là gì?",
+   a:"趣味は___です。（例：映画を見ること）", aRomaji:"Shumi wa ___ desu. (Rei: eiga wo miru koto)", aMeaning:"Sở thích của tôi là ___. (Ví dụ: xem phim.)"},
+  {section:"Tự giới thiệu & sở thích", q:"休みの日は何をしますか。", qRomaji:"Yasumi no hi wa nani wo shimasu ka.", qMeaning:"Ngày nghỉ bạn thường làm gì?",
+   a:"友達と会ったり、家でゆっくりしたりします。", aRomaji:"Tomodachi to attari, ie de yukkuri shitari shimasu.", aMeaning:"Tôi hay gặp bạn bè hoặc ở nhà nghỉ ngơi thoải mái."},
+  {section:"Tự giới thiệu & sở thích", q:"一人で旅行するのが好きですか。", qRomaji:"Hitori de ryokou suru no ga suki desu ka.", qMeaning:"Bạn có thích đi du lịch một mình không?",
+   a:"はい、一人で旅行するのが好きです。自由だからです。", aRomaji:"Hai, hitori de ryokou suru no ga suki desu. Jiyuu dakara desu.", aMeaning:"Có, tôi thích đi du lịch một mình vì thấy tự do."},
+  {section:"Tự giới thiệu & sở thích", q:"週末はよく運動しますか。", qRomaji:"Shuumatsu wa yoku undou shimasu ka.", qMeaning:"Cuối tuần bạn có hay tập thể dục không?",
+   a:"はい、週末はよくジムに行って運動します。", aRomaji:"Hai, shuumatsu wa yoku jimu ni itte undou shimasu.", aMeaning:"Có, cuối tuần tôi hay đến phòng gym để tập."},
+  {section:"Tự giới thiệu & sở thích", q:"新しい趣味を始めたことがありますか。", qRomaji:"Atarashii shumi wo hajimeta koto ga arimasu ka.", qMeaning:"Bạn từng bắt đầu một sở thích mới nào chưa?",
+   a:"はい、去年から料理を始めました。前は全然できなかったのに、今は結構上手になりました。", aRomaji:"Hai, kyonen kara ryouri wo hajimemashita. Mae wa zenzen dekinakatta noni, ima wa kekkou jouzu ni narimashita.", aMeaning:"Có, tôi bắt đầu nấu ăn từ năm ngoái. Trước đây hoàn toàn không biết nấu, vậy mà giờ đã khá giỏi rồi."},
+  {section:"Tự giới thiệu & sở thích", q:"最近、性格が変わったと思いますか。", qRomaji:"Saikin, seikaku ga kawatta to omoimasu ka.", qMeaning:"Gần đây bạn có thấy tính cách mình thay đổi không?",
+   a:"そうですね、前より人前で話せるようになりました。", aRomaji:"Sou desu ne, mae yori hitomae de hanaseru you ni narimashita.", aMeaning:"Ừ thì, so với trước tôi đã có thể nói chuyện trước đám đông rồi."},
+  {section:"Tự giới thiệu & sở thích", q:"将来はどんな生活をしたいですか。", qRomaji:"Shourai wa donna seikatsu wo shitai desu ka.", qMeaning:"Tương lai bạn muốn sống cuộc sống như thế nào?",
+   a:"そうですね、将来は日本で働いているかもしれません。", aRomaji:"Sou desu ne, shourai wa Nihon de hataraite iru kamoshiremasen.", aMeaning:"Ừ thì, có thể tương lai tôi sẽ đang làm việc ở Nhật."},
+
+  // 02 - Gia đình
+  {section:"Gia đình", q:"ご家族は何人ですか。", qRomaji:"Go-kazoku wa nan-nin desu ka.", qMeaning:"Gia đình bạn có mấy người?",
+   a:"家族は四人です。両親と兄と私です。", aRomaji:"Kazoku wa yonin desu. Ryoushin to ani to watashi desu.", aMeaning:"Gia đình tôi có 4 người: bố mẹ, anh trai và tôi."},
+  {section:"Gia đình", q:"ご兄弟はいますか。", qRomaji:"Go-kyoudai wa imasu ka.", qMeaning:"Bạn có anh chị em không?",
+   a:"はい、兄が一人と妹が一人います。", aRomaji:"Hai, ani ga hitori to imouto ga hitori imasu.", aMeaning:"Có, tôi có một anh trai và một em gái."},
+  {section:"Gia đình", q:"何番目ですか。", qRomaji:"Nan-banme desu ka.", qMeaning:"Bạn là con thứ mấy?",
+   a:"三人兄弟の真ん中です。", aRomaji:"San-nin kyoudai no man-naka desu.", aMeaning:"Tôi là con giữa trong 3 anh chị em."},
+  {section:"Gia đình", q:"ご両親のお仕事は何ですか。", qRomaji:"Go-ryoushin no oshigoto wa nan desu ka.", qMeaning:"Bố mẹ bạn làm nghề gì?",
+   a:"父は会社員で、母は主婦です。", aRomaji:"Chichi wa kaishain de, haha wa shufu desu.", aMeaning:"Bố tôi là nhân viên công ty, mẹ tôi là nội trợ."},
+  {section:"Gia đình", q:"今、ご両親と一緒に住んでいますか。", qRomaji:"Ima, go-ryoushin to issho ni sunde imasu ka.", qMeaning:"Hiện tại bạn có sống chung với bố mẹ không?",
+   a:"いいえ、今は一人で住んでいます。両親は実家にいます。", aRomaji:"Iie, ima wa hitori de sunde imasu. Ryoushin wa jikka ni imasu.", aMeaning:"Không, hiện tại tôi sống một mình. Bố mẹ tôi ở nhà quê."},
+  {section:"Gia đình", q:"結婚していますか。", qRomaji:"Kekkon shite imasu ka.", qMeaning:"Bạn đã kết hôn chưa?",
+   a:"いいえ、まだ独身です。", aRomaji:"Iie, mada dokushin desu.", aMeaning:"Chưa, tôi vẫn còn độc thân."},
+  {section:"Gia đình", q:"お子さんはいますか。", qRomaji:"O-ko-san wa imasu ka.", qMeaning:"Bạn có con chưa?",
+   a:"いいえ、まだいません。結婚してから考えたいです。", aRomaji:"Iie, mada imasen. Kekkon shite kara kangaetai desu.", aMeaning:"Chưa, tôi muốn kết hôn xong rồi mới nghĩ đến chuyện đó."},
+  {section:"Gia đình", q:"ご家族と仲がいいですか。", qRomaji:"Go-kazoku to naka ga ii desu ka.", qMeaning:"Bạn có hợp/thân với gia đình không?",
+   a:"はい、とても仲がいいです。よく電話で話します。", aRomaji:"Hai, totemo naka ga ii desu. Yoku denwa de hanashimasu.", aMeaning:"Có, rất thân. Tôi hay gọi điện nói chuyện với gia đình."},
+  {section:"Gia đình", q:"実家にはよく帰りますか。", qRomaji:"Jikka ni wa yoku kaerimasu ka.", qMeaning:"Bạn có hay về nhà quê không?",
+   a:"月に一回ぐらい帰ります。", aRomaji:"Tsuki ni ikkai gurai kaerimasu.", aMeaning:"Khoảng một tháng tôi về một lần."},
+  {section:"Gia đình", q:"お兄さんとよくけんかしますか。", qRomaji:"Onii-san to yoku kenka shimasu ka.", qMeaning:"Bạn có hay cãi nhau với anh trai không?",
+   a:"小さい頃はよくけんかしましたが、今は仲良しです。", aRomaji:"Chiisai koro wa yoku kenka shimashita ga, ima wa nakayoshi desu.", aMeaning:"Hồi nhỏ hay cãi nhau lắm, nhưng giờ thì thân thiết rồi."},
+  {section:"Gia đình", q:"将来、両親と同居するつもりですか。", qRomaji:"Shourai, ryoushin to doukyo suru tsumori desu ka.", qMeaning:"Tương lai bạn có định sống chung với bố mẹ không?",
+   a:"そうですね、両親が年を取ったら、一緒に住むかもしれません。", aRomaji:"Sou desu ne, ryoushin ga toshi wo tottara, issho ni sumu kamoshiremasen.", aMeaning:"Ừ thì, khi nào bố mẹ già thì có lẽ tôi sẽ sống chung."},
+  {section:"Gia đình", q:"家族のことで悩んだことがありますか。", qRomaji:"Kazoku no koto de nayanda koto ga arimasu ka.", qMeaning:"Bạn từng có lúc lo lắng/băn khoăn về chuyện gia đình chưa?",
+   a:"はい、実家から遠く離れて働くようになってから、両親のことが心配になりました。", aRomaji:"Hai, jikka kara tooku hanarete hataraku you ni natte kara, ryoushin no koto ga shinpai ni narimashita.", aMeaning:"Có, từ khi tôi đi làm xa nhà, tôi bắt đầu lo lắng cho bố mẹ nhiều hơn."},
+  {section:"Gia đình", q:"忙しいのに、家族に連絡していますか。", qRomaji:"Isogashii noni, kazoku ni renraku shite imasu ka.", qMeaning:"Dù bận rộn nhưng bạn có liên lạc với gia đình không?",
+   a:"はい、忙しいのに、週に一回は必ず電話します。", aRomaji:"Hai, isogashii noni, shuu ni ikkai wa kanarazu denwa shimasu.", aMeaning:"Có, dù bận nhưng mỗi tuần tôi đều gọi điện về nhà ít nhất một lần."},
+
+  // 03 - Thời tiết & mùa
+  {section:"Thời tiết & mùa", q:"今日の天気はどうですか。", qRomaji:"Kyou no tenki wa dou desu ka.", qMeaning:"Thời tiết hôm nay thế nào?",
+   a:"今日はいい天気ですね。晴れています。", aRomaji:"Kyou wa ii tenki desu ne. Harete imasu.", aMeaning:"Hôm nay thời tiết đẹp ghê. Trời đang nắng."},
+  {section:"Thời tiết & mùa", q:"ベトナムの夏は暑いですか。", qRomaji:"Betonamu no natsu wa atsui desu ka.", qMeaning:"Mùa hè ở Việt Nam có nóng không?",
+   a:"はい、とても暑くて、蒸し暑いです。", aRomaji:"Hai, totemo atsukute, mushiatsui desu.", aMeaning:"Có, nóng lắm, lại còn nóng ẩm nữa."},
+  {section:"Thời tiết & mùa", q:"一年に季節はいくつありますか。", qRomaji:"Ichinen ni kisetsu wa ikutsu arimasu ka.", qMeaning:"Một năm có mấy mùa?",
+   a:"ベトナムの北の方は四つの季節があります。春、夏、秋、冬です。", aRomaji:"Betonamu no kita no hou wa yottsu no kisetsu ga arimasu. Haru, natsu, aki, fuyu desu.", aMeaning:"Ở miền Bắc Việt Nam có 4 mùa: xuân, hạ, thu, đông."},
+  {section:"Thời tiết & mùa", q:"どの季節が一番好きですか。", qRomaji:"Dono kisetsu ga ichiban suki desu ka.", qMeaning:"Bạn thích mùa nào nhất?",
+   a:"___が一番好きです。（例：秋。涼しくて、過ごしやすいから。）", aRomaji:"___ ga ichiban suki desu. (Rei: Aki. Suzushikute, sugoshiyasui kara.)", aMeaning:"Tôi thích mùa ___ nhất. (Ví dụ: mùa thu, vì mát mẻ, dễ chịu.)"},
+  {section:"Thời tiết & mùa", q:"冬は寒いですか。", qRomaji:"Fuyu wa samui desu ka.", qMeaning:"Mùa đông có lạnh không?",
+   a:"南はあまり寒くないですが、北はかなり寒いです。", aRomaji:"Minami wa amari samukunai desu ga, kita wa kanari samui desu.", aMeaning:"Miền Nam không lạnh lắm, nhưng miền Bắc thì khá lạnh."},
+  {section:"Thời tiết & mùa", q:"雨の日は好きですか。", qRomaji:"Ame no hi wa suki desu ka.", qMeaning:"Bạn có thích những ngày mưa không?",
+   a:"あまり好きじゃありません。出かけるのが大変だからです。", aRomaji:"Amari suki ja arimasen. Dekakeru no ga taihen dakara desu.", aMeaning:"Không thích lắm. Vì ra ngoài vất vả."},
+  {section:"Thời tiết & mùa", q:"台風はよく来ますか。", qRomaji:"Taifuu wa yoku kimasu ka.", qMeaning:"Bão có hay đến không?",
+   a:"はい、夏から秋にかけて、よく台風が来ます。", aRomaji:"Hai, natsu kara aki ni kakete, yoku taifuu ga kimasu.", aMeaning:"Có, từ mùa hè sang mùa thu bão hay đến lắm."},
+  {section:"Thời tiết & mùa", q:"日本の冬は雪が降りますか。", qRomaji:"Nihon no fuyu wa yuki ga furimasu ka.", qMeaning:"Mùa đông ở Nhật có tuyết rơi không?",
+   a:"地域によりますが、北の方はたくさん雪が降ります。", aRomaji:"Chiiki ni yorimasu ga, kita no hou wa takusan yuki ga furimasu.", aMeaning:"Tùy vùng, nhưng vùng phía Bắc thì tuyết rơi nhiều."},
+  {section:"Thời tiết & mùa", q:"天気予報をよく見ますか。", qRomaji:"Tenki yohou wo yoku mimasu ka.", qMeaning:"Bạn có hay xem dự báo thời tiết không?",
+   a:"はい、出かける前に必ずスマホで見ます。", aRomaji:"Hai, dekakeru mae ni kanarazu sumaho de mimasu.", aMeaning:"Có, trước khi ra ngoài tôi luôn xem trên điện thoại."},
+  {section:"Thời tiết & mùa", q:"明日の天気はどうなると思いますか。", qRomaji:"Ashita no tenki wa dou naru to omoimasu ka.", qMeaning:"Bạn nghĩ thời tiết ngày mai sẽ thế nào?",
+   a:"たぶん曇りだと思いますが、雨が降るかもしれません。", aRomaji:"Tabun kumori da to omoimasu ga, ame ga furu kamoshiremasen.", aMeaning:"Chắc là trời nhiều mây, nhưng có thể sẽ mưa."},
+  {section:"Thời tiết & mùa", q:"前は夏が苦手でしたか。", qRomaji:"Mae wa natsu ga nigate deshita ka.", qMeaning:"Trước đây bạn có ngại mùa hè không?",
+   a:"はい、前はエアコンがないと辛かったのに、今は少し慣れました。", aRomaji:"Hai, mae wa eakon ga nai to tsurakatta noni, ima wa sukoshi naremashita.", aMeaning:"Có, trước đây không có điều hòa thì khổ lắm, vậy mà giờ tôi cũng quen dần rồi."},
+  {section:"Thời tiết & mùa", q:"天気が変わりやすい所に住んだことがありますか。", qRomaji:"Tenki ga kawariyasui tokoro ni sunda koto ga arimasu ka.", qMeaning:"Bạn từng sống ở nơi thời tiết hay thay đổi thất thường chưa?",
+   a:"はい、大学時代はダラットに住んでいて、一日に何回も天気が変わることがありました。", aRomaji:"Hai, daigaku jidai wa Daratto ni sunde ite, ichinichi ni nankai mo tenki ga kawaru koto ga arimashita.", aMeaning:"Có, thời đại học tôi sống ở Đà Lạt, có hôm thời tiết thay đổi mấy lần trong một ngày."},
+  {section:"Thời tiết & mùa", q:"最近、涼しくなってきましたね。", qRomaji:"Saikin, suzushiku natte kimashita ne.", qMeaning:"Dạo này trời mát dần lên rồi nhỉ.",
+   a:"そうですね。もうすぐ秋ですね。", aRomaji:"Sou desu ne. Mou sugu aki desu ne.", aMeaning:"Đúng vậy. Sắp thu rồi nhỉ."},
+
+  // 04 - Mua sắm
+  {section:"Mua sắm", q:"これはいくらですか。", qRomaji:"Kore wa ikura desu ka.", qMeaning:"Cái này giá bao nhiêu vậy?",
+   a:"それは1,000円です。", aRomaji:"Sore wa sen en desu.", aMeaning:"Cái đó 1.000 yên ạ."},
+  {section:"Mua sắm", q:"すみません、このシャツのMサイズはありますか。", qRomaji:"Sumimasen, kono shatsu no emu saizu wa arimasu ka.", qMeaning:"Xin lỗi, áo này có size M không ạ?",
+   a:"はい、ございます。少々お待ちください。", aRomaji:"Hai, gozaimasu. Shoushou omachi kudasai.", aMeaning:"Dạ có ạ. Xin quý khách đợi một chút."},
+  {section:"Mua sắm", q:"試着してもいいですか。", qRomaji:"Shichaku shite mo ii desu ka.", qMeaning:"Tôi mặc thử được không?",
+   a:"どうぞ、試着室はあちらです。", aRomaji:"Douzo, shichakushitsu wa achira desu.", aMeaning:"Mời anh/chị, phòng thử đồ ở đằng kia ạ."},
+  {section:"Mua sắm", q:"もう少し安いのはありますか。", qRomaji:"Mou sukoshi yasui no wa arimasu ka.", qMeaning:"Có cái nào rẻ hơn một chút không?",
+   a:"こちらはいかがですか。少し安いです。", aRomaji:"Kochira wa ikaga desu ka. Sukoshi yasui desu.", aMeaning:"Cái này thì sao ạ? Rẻ hơn một chút đó."},
+  {section:"Mua sắm", q:"お支払いは現金ですか、カードですか。", qRomaji:"Oshiharai wa genkin desu ka, kaado desu ka.", qMeaning:"Anh/chị thanh toán bằng tiền mặt hay thẻ ạ?",
+   a:"カードでお願いします。", aRomaji:"Kaado de onegaishimasu.", aMeaning:"Cho tôi thanh toán bằng thẻ."},
+  {section:"Mua sắm", q:"袋は要りますか。", qRomaji:"Fukuro wa irimasu ka.", qMeaning:"Anh/chị có cần túi đựng không?",
+   a:"はい、一つください。", aRomaji:"Hai, hitotsu kudasai.", aMeaning:"Dạ có, cho tôi một cái."},
+  {section:"Mua sắm", q:"これ、割引になっていますか。", qRomaji:"Kore, waribiki ni natte imasu ka.", qMeaning:"Cái này đang được giảm giá phải không?",
+   a:"はい、今は20パーセント引きです。", aRomaji:"Hai, ima wa nijuppaasento biki desu.", aMeaning:"Dạ đúng rồi, hiện đang giảm 20%."},
+  {section:"Mua sắm", q:"領収書をもらえますか。", qRomaji:"Ryoushuusho wo moraemasu ka.", qMeaning:"Cho tôi xin hóa đơn được không?",
+   a:"かしこまりました。少々お待ちください。", aRomaji:"Kashikomarimashita. Shoushou omachi kudasai.", aMeaning:"Vâng ạ. Xin đợi một chút."},
+  {section:"Mua sắm", q:"サイズが合わなかったので、交換できますか。", qRomaji:"Saizu ga awanakatta node, koukan dekimasu ka.", qMeaning:"Vì size không vừa nên tôi đổi được không?",
+   a:"レシートがあれば交換できます。", aRomaji:"Reshiito ga areba koukan dekimasu.", aMeaning:"Nếu có hóa đơn thì đổi được ạ."},
+  {section:"Mua sắm", q:"すみません、___を探しているんですが、どこにありますか。", qRomaji:"Sumimasen, ___ wo sagashite irun desu ga, doko ni arimasu ka.", qMeaning:"Xin lỗi, tôi đang tìm ___, cái đó ở đâu vậy?",
+   a:"2階の奥にございます。", aRomaji:"Nikai no oku ni gozaimasu.", aMeaning:"Nó ở phía trong tầng 2 ạ."},
+  {section:"Mua sắm", q:"前に買った時より、値段が高くなったような気がします。", qRomaji:"Mae ni katta toki yori, nedan ga takaku natta you na ki ga shimasu.", qMeaning:"Tôi có cảm giác giá tăng hơn so với lần trước mua.",
+   a:"そうですね、最近少し値上がりしました。", aRomaji:"Sou desu ne, saikin sukoshi neagari shimashita.", aMeaning:"Đúng vậy, gần đây giá có nhích lên một chút."},
+  {section:"Mua sắm", q:"このお店は初めて来たんですが、何かおすすめはありますか。", qRomaji:"Kono omise wa hajimete kitan desu ga, nanika osusume wa arimasu ka.", qMeaning:"Tôi mới đến cửa hàng này lần đầu, có gì đáng để xem thử không?",
+   a:"今は新商品がセール中なので、見てみる価値がありますよ。", aRomaji:"Ima wa shinshouhin ga seeruchuu na node, mite miru kachi ga arimasu yo.", aMeaning:"Hiện giờ hàng mới đang giảm giá nên rất đáng để ngó qua đó."},
+  {section:"Mua sắm", q:"このカードは使えないかもしれないので、現金も持ってきました。", qRomaji:"Kono kaado wa tsukaenai kamoshirenai node, genkin mo motte kimashita.", qMeaning:"Vì sợ thẻ này không dùng được nên tôi mang theo cả tiền mặt.",
+   a:"大丈夫ですよ、うちはどちらも使えます。", aRomaji:"Daijoubu desu yo, uchi wa dochira mo tsukaemasu.", aMeaning:"Không sao đâu ạ, chỗ em dùng được cả hai loại."},
+
+  // 05 - Nhà hàng & gọi món
+  {section:"Nhà hàng & gọi món", q:"今晩7時に2名で予約したいのですが。", qRomaji:"Konban shichiji ni nimei de yoyaku shitai no desu ga.", qMeaning:"Tôi muốn đặt bàn cho 2 người lúc 7 giờ tối nay.",
+   a:"かしこまりました。お名前をお願いします。", aRomaji:"Kashikomarimashita. Onamae wo onegaishimasu.", aMeaning:"Vâng ạ. Cho em xin tên quý khách."},
+  {section:"Nhà hàng & gọi món", q:"すみません、メニューを見せてください。", qRomaji:"Sumimasen, menyuu wo misete kudasai.", qMeaning:"Xin lỗi, cho tôi xem thực đơn với.",
+   a:"はい、どうぞ。", aRomaji:"Hai, douzo.", aMeaning:"Dạ, mời anh/chị."},
+  {section:"Nhà hàng & gọi món", q:"おすすめは何ですか。", qRomaji:"Osusume wa nan desu ka.", qMeaning:"Món nào ngon, được gợi ý vậy?",
+   a:"今日はラーメンが人気です。", aRomaji:"Kyou wa raamen ga ninki desu.", aMeaning:"Hôm nay món ramen đang được nhiều người gọi lắm."},
+  {section:"Nhà hàng & gọi món", q:"これは辛いですか。", qRomaji:"Kore wa karai desu ka.", qMeaning:"Món này có cay không?",
+   a:"少し辛いです。大丈夫ですか。", aRomaji:"Sukoshi karai desu. Daijoubu desu ka.", aMeaning:"Hơi cay một chút. Anh/chị ổn với cay không?"},
+  {section:"Nhà hàng & gọi món", q:"すみません、注文をお願いします。", qRomaji:"Sumimasen, chuumon wo onegaishimasu.", qMeaning:"Xin lỗi, cho tôi gọi món.",
+   a:"はい、お決まりですか。", aRomaji:"Hai, okimari desu ka.", aMeaning:"Dạ, quý khách chọn xong chưa ạ?"},
+  {section:"Nhà hàng & gọi món", q:"これとこれをください。", qRomaji:"Kore to kore wo kudasai.", qMeaning:"Cho tôi cái này với cái này.",
+   a:"かしこまりました。お飲み物はいかがですか。", aRomaji:"Kashikomarimashita. Onomimono wa ikaga desu ka.", aMeaning:"Vâng ạ. Còn đồ uống thì sao ạ?"},
+  {section:"Nhà hàng & gọi món", q:"すみません、私は卵アレルギーがあります。", qRomaji:"Sumimasen, watashi wa tamago arerugii ga arimasu.", qMeaning:"Xin lỗi, tôi bị dị ứng trứng.",
+   a:"わかりました。卵を抜いて作ります。", aRomaji:"Wakarimashita. Tamago wo nuite tsukurimasu.", aMeaning:"Vâng ạ. Em sẽ làm không cho trứng vào."},
+  {section:"Nhà hàng & gọi món", q:"取り皿をもらえますか。", qRomaji:"Torizara wo moraemasu ka.", qMeaning:"Cho tôi xin cái đĩa nhỏ để chia đồ ăn được không?",
+   a:"少々お待ちください。", aRomaji:"Shoushou omachi kudasai.", aMeaning:"Xin đợi một chút ạ."},
+  {section:"Nhà hàng & gọi món", q:"お会計お願いします。", qRomaji:"Okaikei onegaishimasu.", qMeaning:"Cho tôi tính tiền.",
+   a:"全部で3,500円になります。", aRomaji:"Zenbu de sanzengohyaku en ni narimasu.", aMeaning:"Tổng cộng là 3.500 yên ạ."},
+  {section:"Nhà hàng & gọi món", q:"別々に払ってもいいですか。", qRomaji:"Betsubetsu ni haratte mo ii desu ka.", qMeaning:"Chúng tôi trả riêng được không?",
+   a:"申し訳ありませんが、こちらでは一括のみです。", aRomaji:"Moushiwake arimasen ga, kochira dewa ikkatsu nomi desu.", aMeaning:"Xin lỗi ạ, ở đây chỉ nhận thanh toán gộp thôi."},
+  {section:"Nhà hàng & gọi món", q:"___を食べたことがありますか。", qRomaji:"___ wo tabeta koto ga arimasu ka.", qMeaning:"Anh/chị đã từng ăn ___ chưa?",
+   a:"はい、一度食べたことがあります。とても美味しかったです。", aRomaji:"Hai, ichido tabeta koto ga arimasu. Totemo oishikatta desu.", aMeaning:"Có, tôi từng ăn một lần rồi. Ngon lắm."},
+  {section:"Nhà hàng & gọi món", q:"辛いものが苦手なので、辛さを控えめにしてもらえますか。", qRomaji:"Karai mono ga nigate na node, karasa wo hikaeme ni shite moraemasu ka.", qMeaning:"Vì tôi không ăn được cay lắm nên có thể làm bớt cay lại không?",
+   a:"かしこまりました、辛さを調整しますね。", aRomaji:"Kashikomarimashita, karasa wo chousei shimasu ne.", aMeaning:"Vâng ạ, em sẽ điều chỉnh độ cay cho."},
+  {section:"Nhà hàng & gọi món", q:"この店に来るたびに、いつも同じものを頼むことがあります。", qRomaji:"Kono mise ni kuru tabi ni, itsumo onaji mono wo tanomu koto ga arimasu.", qMeaning:"Mỗi lần đến quán này, tôi hay gọi món giống nhau.",
+   a:"それだけ気に入っているということですね。", aRomaji:"Sore dake ki ni itte iru to iu koto desu ne.", aMeaning:"Vậy nghĩa là anh/chị thích món đó lắm rồi."},
+  {section:"Nhà hàng & gọi món", q:"量が多いかもしれないので、少なめにできますか。", qRomaji:"Ryou ga ooi kamoshirenai node, sukuname ni dekimasu ka.", qMeaning:"Vì có thể phần ăn hơi nhiều nên có làm ít lại được không?",
+   a:"はい、量を減らすことができますよ。", aRomaji:"Hai, ryou wo herasu koto ga dekimasu yo.", aMeaning:"Dạ được, có thể bớt khẩu phần lại ạ."},
+
+  // 06 - Hỏi đường
+  {section:"Hỏi đường", q:"すみません、駅はどこですか。", qRomaji:"Sumimasen, eki wa doko desu ka.", qMeaning:"Xin lỗi, ga tàu ở đâu vậy ạ?",
+   a:"この道をまっすぐ行ってください。", aRomaji:"Kono michi wo massugu itte kudasai.", aMeaning:"Anh/chị đi thẳng theo con đường này."},
+  {section:"Hỏi đường", q:"ここから歩いてどのくらいですか。", qRomaji:"Koko kara aruite dono kurai desu ka.", qMeaning:"Từ đây đi bộ mất khoảng bao lâu?",
+   a:"10分くらいです。", aRomaji:"Juppun kurai desu.", aMeaning:"Khoảng 10 phút thôi."},
+  {section:"Hỏi đường", q:"右ですか、左ですか。", qRomaji:"Migi desu ka, hidari desu ka.", qMeaning:"Rẽ phải hay rẽ trái vậy ạ?",
+   a:"次の信号を右に曲がってください。", aRomaji:"Tsugi no shingou wo migi ni magatte kudasai.", aMeaning:"Anh/chị rẽ phải ở đèn giao thông tiếp theo."},
+  {section:"Hỏi đường", q:"この近くにコンビニはありますか。", qRomaji:"Kono chikaku ni konbini wa arimasu ka.", qMeaning:"Gần đây có cửa hàng tiện lợi không?",
+   a:"はい、あの角にあります。", aRomaji:"Hai, ano kado ni arimasu.", aMeaning:"Có, nó ở góc đường kia kìa."},
+  {section:"Hỏi đường", q:"すみません、道に迷ってしまいました。", qRomaji:"Sumimasen, michi ni mayotte shimaimashita.", qMeaning:"Xin lỗi, tôi bị lạc đường mất rồi.",
+   a:"どこに行きたいんですか。", aRomaji:"Doko ni ikitain desu ka.", aMeaning:"Anh/chị muốn đi đâu vậy?"},
+  {section:"Hỏi đường", q:"銀行に行きたいんですが、この道で合っていますか。", qRomaji:"Ginkou ni ikitain desu ga, kono michi de atte imasu ka.", qMeaning:"Tôi muốn đi ngân hàng, đi đường này có đúng không ạ?",
+   a:"いいえ、反対方向ですよ。", aRomaji:"Iie, hantai houkou desu yo.", aMeaning:"Không, ngược hướng rồi đó."},
+  {section:"Hỏi đường", q:"何か目印はありますか。", qRomaji:"Nanika mejirushi wa arimasu ka.", qMeaning:"Có gì làm mốc để dễ nhận ra không ạ?",
+   a:"大きい銀行の隣にあります。", aRomaji:"Ookii ginkou no tonari ni arimasu.", aMeaning:"Nó nằm cạnh ngân hàng lớn đó."},
+  {section:"Hỏi đường", q:"交差点を渡ったら、どちらに行けばいいですか。", qRomaji:"Kousaten wo watattara, dochira ni ikeba ii desu ka.", qMeaning:"Sau khi qua ngã tư thì đi hướng nào ạ?",
+   a:"渡ってすぐ左です。", aRomaji:"Watatte sugu hidari desu.", aMeaning:"Qua xong rẽ trái ngay là tới."},
+  {section:"Hỏi đường", q:"歩いて行けますか、それともバスに乗ったほうがいいですか。", qRomaji:"Aruite ikemasu ka, soretomo basu ni notta hou ga ii desu ka.", qMeaning:"Đi bộ được không, hay nên đi xe buýt thì hơn?",
+   a:"少し遠いので、バスに乗ったほうがいいですよ。", aRomaji:"Sukoshi tooi node, basu ni notta hou ga ii desu yo.", aMeaning:"Hơi xa nên đi xe buýt thì tốt hơn đó."},
+  {section:"Hỏi đường", q:"すみません、この地図で今どこにいるか教えてもらえますか。", qRomaji:"Sumimasen, kono chizu de ima doko ni iru ka oshiete moraemasu ka.", qMeaning:"Xin lỗi, chỉ giúp tôi trên bản đồ này hiện đang ở đâu được không?",
+   a:"ここです。駅はこの矢印の方向です。", aRomaji:"Koko desu. Eki wa kono yajirushi no houkou desu.", aMeaning:"Đây ạ. Ga tàu nằm theo hướng mũi tên này."},
+  {section:"Hỏi đường", q:"___まで、歩いて行けますか。", qRomaji:"___ made, aruite ikemasu ka.", qMeaning:"Đi bộ đến ___ được không?",
+   a:"はい、歩いて5分くらいで着きます。", aRomaji:"Hai, aruite gofun kurai de tsukimasu.", aMeaning:"Được ạ, đi bộ khoảng 5 phút là tới."},
+  {section:"Hỏi đường", q:"前に一度来たことがあるんですが、道を忘れてしまいました。", qRomaji:"Mae ni ichido kita koto ga arun desu ga, michi wo wasurete shimaimashita.", qMeaning:"Tôi từng đến đây một lần rồi nhưng lại quên mất đường.",
+   a:"そういうことはよくありますよ。案内しますね。", aRomaji:"Sou iu koto wa yoku arimasu yo. Annai shimasu ne.", aMeaning:"Chuyện đó thường xảy ra mà. Để em dẫn đường cho."},
+  {section:"Hỏi đường", q:"道が複雑なので、迷うかもしれません。", qRomaji:"Michi ga fukuzatsu na node, mayou kamoshiremasen.", qMeaning:"Vì đường phức tạp nên có thể tôi sẽ bị lạc mất.",
+   a:"では、スマホの地図を見ながら行ったほうが安心ですよ。", aRomaji:"Dewa, sumaho no chizu wo minagara itta hou ga anshin desu yo.", aMeaning:"Vậy thì vừa xem bản đồ trên điện thoại vừa đi sẽ yên tâm hơn đó."},
+  {section:"Hỏi đường", q:"駅の近くに住むようになってから、道に迷うことが少なくなりました。", qRomaji:"Eki no chikaku ni sumu you ni natte kara, michi ni mayou koto ga sukunaku narimashita.", qMeaning:"Từ khi chuyển đến sống gần ga, tôi ít bị lạc đường hơn hẳn.",
+   a:"それは便利になりましたね。", aRomaji:"Sore wa benri ni narimashita ne.", aMeaning:"Vậy thì tiện lợi hơn nhiều rồi nhỉ."},
+
+  // 07 - Điện thoại & đặt lịch
+  {section:"Điện thoại & đặt lịch", q:"もしもし、田中と申しますが、今お時間よろしいでしょうか。", qRomaji:"Moshimoshi, Tanaka to moushimasu ga, ima ojikan yoroshii deshou ka.", qMeaning:"Alo, tôi là Tanaka, không biết bây giờ anh/chị có tiện nói chuyện không ạ?",
+   a:"はい、大丈夫です。どのようなご用件でしょうか。", aRomaji:"Hai, daijoubu desu. Dono you na goyouken deshou ka.", aMeaning:"Vâng, được ạ. Anh/chị cần trao đổi việc gì ạ?"},
+  {section:"Điện thoại & đặt lịch", q:"来週の月曜日に予約を取りたいのですが。", qRomaji:"Raishuu no getsuyoubi ni yoyaku wo toritai no desu ga.", qMeaning:"Tôi muốn đặt lịch hẹn vào thứ Hai tuần sau.",
+   a:"かしこまりました。何時ごろがよろしいですか。", aRomaji:"Kashikomarimashita. Nanji goro ga yoroshii desu ka.", aMeaning:"Vâng tôi hiểu rồi. Khoảng mấy giờ thì tiện cho anh/chị ạ?"},
+  {section:"Điện thoại & đặt lịch", q:"午後三時は空いていますか。", qRomaji:"Gogo sanji wa aiteimasu ka.", qMeaning:"3 giờ chiều còn trống không ạ?",
+   a:"少々お待ちください。……はい、空いております。", aRomaji:"Shoushou omachi kudasai. …Hai, aite orimasu.", aMeaning:"Anh/chị chờ một chút ạ... Vâng, còn trống ạ."},
+  {section:"Điện thoại & đặt lịch", q:"お名前とお電話番号を教えていただけますか。", qRomaji:"Onamae to odenwa bangou wo oshiete itadakemasu ka.", qMeaning:"Cho tôi xin tên và số điện thoại của anh/chị được không ạ?",
+   a:"___です。（例: 山田花子、090-1234-5678です。）", aRomaji:"___ desu. (Rei: Yamada Hanako, zero-kyuu-zero ichi-ni-san-yon go-roku-nana-hachi desu.)", aMeaning:"Tôi là ___. (Ví dụ: Tôi là Yamada Hanako, số điện thoại là 090-1234-5678.)"},
+  {section:"Điện thoại & đặt lịch", q:"すみません、急に用事ができたので、予約をキャンセルしたいのですが。", qRomaji:"Sumimasen, kyuu ni youji ga dekita node, yoyaku wo kyanseru shitai no desu ga.", qMeaning:"Xin lỗi, tôi có việc gấp đột xuất nên muốn hủy lịch hẹn.",
+   a:"承知いたしました。またご都合のよい時にご連絡ください。", aRomaji:"Shouchi itashimashita. Mata gotsugou no yoi toki ni gorenraku kudasai.", aMeaning:"Vâng tôi hiểu rồi. Khi nào tiện thì anh/chị liên hệ lại nhé."},
+  {section:"Điện thoại & đặt lịch", q:"予約の日にちを変更することはできますか。", qRomaji:"Yoyaku no hinichi wo henkou suru koto wa dekimasu ka.", qMeaning:"Tôi có thể đổi ngày hẹn được không ạ?",
+   a:"はい、大丈夫です。いつがよろしいですか。", aRomaji:"Hai, daijoubu desu. Itsu ga yoroshii desu ka.", aMeaning:"Vâng được ạ. Anh/chị muốn đổi sang ngày nào?"},
+  {section:"Điện thoại & đặt lịch", q:"明日、体調が悪いので、会社を休みたいです。", qRomaji:"Ashita, taichou ga warui node, kaisha wo yasumitai desu.", qMeaning:"Ngày mai tôi thấy không khỏe nên muốn xin nghỉ làm.",
+   a:"わかりました。お大事にしてください。", aRomaji:"Wakarimashita. Odaiji ni shite kudasai.", aMeaning:"Tôi hiểu rồi. Anh/chị giữ gìn sức khỏe nhé."},
+  {section:"Điện thoại & đặt lịch", q:"二名で予約をお願いしたいのですが、席はありますか。", qRomaji:"Ninmei de yoyaku wo onegai shitai no desu ga, seki wa arimasu ka.", qMeaning:"Tôi muốn đặt bàn cho 2 người, còn chỗ không ạ?",
+   a:"申し訳ございません、その時間は満席となっております。", aRomaji:"Moushiwake gozaimasen, sono jikan wa manseki to natte orimasu.", aMeaning:"Xin lỗi ạ, khung giờ đó kín chỗ hết rồi."},
+  {section:"Điện thoại & đặt lịch", q:"担当の田中様はいらっしゃいますか。", qRomaji:"Tantou no Tanaka sama wa irasshaimasu ka.", qMeaning:"Anh Tanaka phụ trách có ở đó không ạ?",
+   a:"あいにく田中は外出しております。戻り次第、折り返しお電話させます。", aRomaji:"Ainiku Tanaka wa gaishutsu shite orimasu. Modori shidai, orikaeshi odenwa sasemasu.", aMeaning:"Rất tiếc anh Tanaka đang đi ra ngoài. Khi nào về tôi sẽ nhắc anh ấy gọi lại cho anh/chị."},
+  {section:"Điện thoại & đặt lịch", q:"夜遅くにすみません。明日の予約の件でお電話しました。", qRomaji:"Yoru osoku ni sumimasen. Ashita no yoyaku no ken de odenwa shimashita.", qMeaning:"Xin lỗi vì gọi muộn thế này ạ. Tôi gọi vì việc đặt lịch hẹn ngày mai.",
+   a:"いいえ、大丈夫ですよ。どうされましたか。", aRomaji:"Iie, daijoubu desu yo. Dou saremashita ka.", aMeaning:"Không sao đâu ạ. Có chuyện gì vậy ạ?"},
+  {section:"Điện thoại & đặt lịch", q:"予約の時間に少し遅れるかもしれません。", qRomaji:"Yoyaku no jikan ni sukoshi okureru kamoshiremasen.", qMeaning:"Có thể tôi sẽ đến trễ giờ hẹn một chút.",
+   a:"承知しました。何時ごろになりそうですか。", aRomaji:"Shouchi shimashita. Nanji goro ni narisou desu ka.", aMeaning:"Tôi hiểu rồi ạ. Khoảng mấy giờ thì anh/chị tới được ạ?"},
+  {section:"Điện thoại & đặt lịch", q:"前に一度予約をキャンセルしたことがあるので、少し気まずいです。", qRomaji:"Mae ni ichido yoyaku wo kyanseru shita koto ga aru node, sukoshi kimazui desu.", qMeaning:"Vì trước đây tôi từng hủy hẹn một lần rồi nên hơi ngại.",
+   a:"気にしないでください。またいつでもご連絡くださいね。", aRomaji:"Ki ni shinaide kudasai. Mata itsu demo gorenraku kudasai ne.", aMeaning:"Đừng lo lắng quá ạ. Lúc nào tiện thì cứ liên hệ lại nhé."},
+  {section:"Điện thoại & đặt lịch", q:"電話で予約するのは緊張しますが、最近は少しずつ慣れてきました。", qRomaji:"Denwa de yoyaku suru no wa kinchou shimasu ga, saikin wa sukoshizutsu narete kimashita.", qMeaning:"Gọi điện đặt lịch thì tôi vẫn hơi hồi hộp, nhưng dạo này quen dần rồi.",
+   a:"それはよかったですね。電話は慣れるまで大変ですよね。", aRomaji:"Sore wa yokatta desu ne. Denwa wa nareru made taihen desu yo ne.", aMeaning:"Vậy thì tốt quá. Gọi điện thoại lúc chưa quen đúng là hơi mệt nhỉ."},
+  {section:"Điện thoại & đặt lịch", q:"それでは、よろしくお願いいたします。失礼します。", qRomaji:"Sore dewa, yoroshiku onegai itashimasu. Shitsurei shimasu.", qMeaning:"Vậy nhờ anh/chị giúp đỡ nhé. Tôi xin phép cúp máy đây ạ.",
+   a:"はい、失礼いたします。", aRomaji:"Hai, shitsurei itashimasu.", aMeaning:"Vâng, tôi xin phép cúp máy ạ."},
+
+  // 08 - Bệnh viện & sức khỏe
+  {section:"Bệnh viện & sức khỏe", q:"どうしましたか。", qRomaji:"Dou shimashita ka.", qMeaning:"Bạn thấy sao rồi, bị làm sao vậy?",
+   a:"朝から頭が痛いです。", aRomaji:"Asa kara atama ga itai desu.", aMeaning:"Tôi bị đau đầu từ sáng đến giờ."},
+  {section:"Bệnh viện & sức khỏe", q:"熱はありますか。", qRomaji:"Netsu wa arimasu ka.", qMeaning:"Bạn có sốt không?",
+   a:"はい、三十八度あります。", aRomaji:"Hai, sanjuuhachido arimasu.", aMeaning:"Có, tôi đang sốt 38 độ."},
+  {section:"Bệnh viện & sức khỏe", q:"いつから具合が悪いですか。", qRomaji:"Itsu kara guai ga warui desu ka.", qMeaning:"Bạn thấy không khỏe từ khi nào?",
+   a:"昨日の夜からです。", aRomaji:"Kinou no yoru kara desu.", aMeaning:"Từ tối hôm qua ạ."},
+  {section:"Bệnh viện & sức khỏe", q:"風邪をひいたと思いますか。", qRomaji:"Kaze wo hiita to omoimasu ka.", qMeaning:"Bạn nghĩ mình bị cảm à?",
+   a:"はい、たぶん風邪だと思います。喉も痛いです。", aRomaji:"Hai, tabun kaze da to omoimasu. Nodo mo itai desu.", aMeaning:"Vâng, chắc là bị cảm rồi. Cổ họng tôi cũng đau nữa."},
+  {section:"Bệnh viện & sức khỏe", q:"咳は出ますか。", qRomaji:"Seki wa demasu ka.", qMeaning:"Có ho không?",
+   a:"はい、特に夜に咳がひどいです。", aRomaji:"Hai, tokuni yoru ni seki ga hidoi desu.", aMeaning:"Có, đặc biệt buổi tối là ho nặng hơn hẳn."},
+  {section:"Bệnh viện & sức khỏe", q:"保険証をお持ちですか。", qRomaji:"Hokenshou wo omochi desu ka.", qMeaning:"Bạn có mang theo thẻ bảo hiểm không?",
+   a:"はい、こちらです。", aRomaji:"Hai, kochira desu.", aMeaning:"Có ạ, đây ạ."},
+  {section:"Bệnh viện & sức khỏe", q:"薬のアレルギーはありますか。", qRomaji:"Kusuri no arerugii wa arimasu ka.", qMeaning:"Bạn có bị dị ứng thuốc gì không?",
+   a:"いいえ、ありません。", aRomaji:"Iie, arimasen.", aMeaning:"Không, tôi không có."},
+  {section:"Bệnh viện & sức khỏe", q:"この薬はいつ飲めばいいですか。", qRomaji:"Kono kusuri wa itsu nomeba ii desu ka.", qMeaning:"Thuốc này thì uống lúc nào ạ?",
+   a:"一日三回、食後に飲んでください。", aRomaji:"Ichinichi sankai, shokugo ni nonde kudasai.", aMeaning:"Ngày uống 3 lần, sau bữa ăn nhé."},
+  {section:"Bệnh viện & sức khỏe", q:"お名前を教えてください。", qRomaji:"Onamae wo oshiete kudasai.", qMeaning:"Cho tôi xin tên của bạn.",
+   a:"___です。（例: グエン・ヴァン・タイです。）", aRomaji:"___ desu. (Rei: Guen Van Tai desu.)", aMeaning:"Tôi là ___. (Ví dụ: Tôi là Nguyễn Văn Tài.)"},
+  {section:"Bệnh viện & sức khỏe", q:"明日、休んでもいいですか。体調が悪いです。", qRomaji:"Ashita, yasunde mo ii desu ka. Taichou ga warui desu.", qMeaning:"Mai tôi xin nghỉ được không ạ? Tôi thấy không khỏe.",
+   a:"わかりました。お大事に。", aRomaji:"Wakarimashita. Odaiji ni.", aMeaning:"Được rồi, giữ gìn sức khỏe nhé."},
+  {section:"Bệnh viện & sức khỏe", q:"最近、忙しくて、体調を崩すことがあります。", qRomaji:"Saikin, isogashikute, taichou wo kuzusu koto ga arimasu.", qMeaning:"Dạo này bận quá nên thỉnh thoảng tôi bị mệt, đổ bệnh.",
+   a:"無理しないでくださいね。", aRomaji:"Muri shinaide kudasai ne.", aMeaning:"Đừng cố quá sức nhé."},
+  {section:"Bệnh viện & sức khỏe", q:"薬を飲んでから、少し楽になりました。", qRomaji:"Kusuri wo nonde kara, sukoshi raku ni narimashita.", qMeaning:"Sau khi uống thuốc thì tôi thấy dễ chịu hơn một chút.",
+   a:"それはよかったです。", aRomaji:"Sore wa yokatta desu.", aMeaning:"Vậy thì tốt quá."},
+  {section:"Bệnh viện & sức khỏe", q:"熱があるのに、会社に行かなければなりませんか。", qRomaji:"Netsu ga aru noni, kaisha ni ikanakereba narimasen ka.", qMeaning:"Dù đang bị sốt vậy mà tôi vẫn phải đi làm à?",
+   a:"いいえ、今日は休んだほうがいいですよ。", aRomaji:"Iie, kyou wa yasunda hou ga ii desu yo.", aMeaning:"Không đâu, hôm nay nên nghỉ ngơi thì hơn."},
+
+  // 09 - Giao thông
+  {section:"Giao thông", q:"すみません、駅はどこですか。", qRomaji:"Sumimasen, eki wa doko desu ka.", qMeaning:"Xin lỗi, ga tàu ở đâu vậy ạ?",
+   a:"まっすぐ行って、右に曲がってください。", aRomaji:"Massugu itte, migi ni magatte kudasai.", aMeaning:"Bạn đi thẳng rồi rẽ phải nhé."},
+  {section:"Giao thông", q:"新宿駅までいくらですか。", qRomaji:"Shinjuku eki made ikura desu ka.", qMeaning:"Đến ga Shinjuku hết bao nhiêu tiền vậy?",
+   a:"二百円です。", aRomaji:"Nihyaku en desu.", aMeaning:"200 yên ạ."},
+  {section:"Giao thông", q:"次の電車は何時に来ますか。", qRomaji:"Tsugi no densha wa nanji ni kimasu ka.", qMeaning:"Chuyến tàu tiếp theo mấy giờ đến vậy?",
+   a:"あと五分で来ます。", aRomaji:"Ato gofun de kimasu.", aMeaning:"Còn 5 phút nữa là tàu đến."},
+  {section:"Giao thông", q:"この電車は新宿に止まりますか。", qRomaji:"Kono densha wa Shinjuku ni tomarimasu ka.", qMeaning:"Tàu này có dừng ở Shinjuku không?",
+   a:"いいえ、急行なので止まりません。", aRomaji:"Iie, kyuukou na node tomarimasen.", aMeaning:"Không, vì là tàu tốc hành nên không dừng đâu."},
+  {section:"Giao thông", q:"どこで乗り換えればいいですか。", qRomaji:"Doko de norikaereba ii desu ka.", qMeaning:"Tôi phải chuyển tuyến ở đâu vậy?",
+   a:"渋谷駅で乗り換えてください。", aRomaji:"Shibuya eki de norikaete kudasai.", aMeaning:"Bạn chuyển tuyến ở ga Shibuya nhé."},
+  {section:"Giao thông", q:"終電は何時ですか。", qRomaji:"Shuuden wa nanji desu ka.", qMeaning:"Chuyến tàu cuối là mấy giờ vậy?",
+   a:"十二時十分です。", aRomaji:"Juuniji juppun desu.", aMeaning:"Là 12 giờ 10 phút."},
+  {section:"Giao thông", q:"すみません、タクシーを呼んでもらえますか。", qRomaji:"Sumimasen, takushii wo yonde moraemasu ka.", qMeaning:"Làm ơn gọi giúp tôi taxi được không ạ?",
+   a:"はい、少々お待ちください。", aRomaji:"Hai, shoushou omachi kudasai.", aMeaning:"Vâng, bạn chờ một chút nhé."},
+  {section:"Giao thông", q:"このバスは空港に行きますか。", qRomaji:"Kono basu wa kuukou ni ikimasu ka.", qMeaning:"Xe buýt này có đi sân bay không?",
+   a:"はい、行きますよ。", aRomaji:"Hai, ikimasu yo.", aMeaning:"Có đấy ạ."},
+  {section:"Giao thông", q:"切符はどこで買えますか。", qRomaji:"Kippu wa doko de kaemasu ka.", qMeaning:"Vé thì mua ở đâu vậy ạ?",
+   a:"あの券売機で買えます。", aRomaji:"Ano kenbaiki de kaemasu.", aMeaning:"Mua ở máy bán vé đằng kia ạ."},
+  {section:"Giao thông", q:"行き先を教えてください。", qRomaji:"Ikisaki wo oshiete kudasai.", qMeaning:"Cho tôi biết bạn muốn đến đâu ạ. (trong taxi)",
+   a:"___までお願いします。（例: 東京駅までお願いします。）", aRomaji:"___ made onegaishimasu. (Rei: Toukyou eki made onegaishimasu.)", aMeaning:"Làm ơn cho tôi đến ___. (Ví dụ: Làm ơn cho tôi đến ga Tokyo.)"},
+  {section:"Giao thông", q:"電車が遅延しているみたいですね。", qRomaji:"Densha ga chien shite iru mitai desu ne.", qMeaning:"Hình như tàu đang bị trễ giờ nhỉ.",
+   a:"そうですね、事故があったらしいです。", aRomaji:"Sou desu ne, jiko ga atta rashii desu.", aMeaning:"Đúng vậy, hình như có tai nạn gì đó."},
+  {section:"Giao thông", q:"朝のラッシュ時は電車がとても混雑することがあります。", qRomaji:"Asa no rasshu-ji wa densha ga totemo konzatsu suru koto ga arimasu.", qMeaning:"Giờ cao điểm buổi sáng thỉnh thoảng tàu đông kinh khủng.",
+   a:"そうですね、満員電車は大変ですよね。", aRomaji:"Sou desu ne, manin densha wa taihen desu yo ne.", aMeaning:"Đúng vậy, tàu chật cứng người thì mệt thật đấy."},
+  {section:"Giao thông", q:"最近、道に迷わないようになりました。", qRomaji:"Saikin, michi ni mayowanai you ni narimashita.", qMeaning:"Dạo này tôi không còn bị lạc đường nữa rồi.",
+   a:"それはすごいですね。もう慣れましたね。", aRomaji:"Sore wa sugoi desu ne. Mou naremashita ne.", aMeaning:"Giỏi ghê vậy, chắc quen đường rồi nhỉ."},
+  {section:"Giao thông", q:"もう少し早く出れば、間に合ったかもしれません。", qRomaji:"Mou sukoshi hayaku dereba, maniatta kamoshiremasen.", qMeaning:"Nếu ra sớm hơn một chút thì có khi đã kịp rồi.",
+   a:"次は気をつけましょう。", aRomaji:"Tsugi wa ki wo tsukemashou.", aMeaning:"Lần sau mình cẩn thận hơn nhé."},
+
+  // 10 - Ngân hàng & hành chính
+  {section:"Ngân hàng & hành chính", q:"すみません、口座を作りたいんですが。", qRomaji:"Sumimasen, kouza wo tsukuritain desu ga.", qMeaning:"Xin lỗi, tôi muốn mở tài khoản ngân hàng.",
+   a:"はい、こちらの用紙に記入してください。", aRomaji:"Hai, kochira no youshi ni kinyuu shite kudasai.", aMeaning:"Vâng, anh/chị điền vào tờ này giúp em."},
+  {section:"Ngân hàng & hành chính", q:"在留カードと印鑑はお持ちですか。", qRomaji:"Zairyuu kaado to inkan wa omochi desu ka.", qMeaning:"Anh/chị có mang theo thẻ cư trú và con dấu không?",
+   a:"はい、両方持っています。", aRomaji:"Hai, ryouhou motte imasu.", aMeaning:"Vâng, tôi có mang cả hai."},
+  {section:"Ngân hàng & hành chính", q:"通帳はいつできますか。", qRomaji:"Tsuuchou wa itsu dekimasu ka.", qMeaning:"Khi nào thì sổ ngân hàng làm xong?",
+   a:"一週間後に郵送します。", aRomaji:"Isshuukango ni yuusou shimasu.", aMeaning:"Khoảng một tuần sau chúng tôi sẽ gửi qua bưu điện."},
+  {section:"Ngân hàng & hành chính", q:"この荷物をベトナムに送りたいんですが。", qRomaji:"Kono nimotsu wo Betonamu ni okuritain desu ga.", qMeaning:"Tôi muốn gửi kiện hàng này về Việt Nam.",
+   a:"中身は何ですか。", aRomaji:"Nakami wa nan desu ka.", aMeaning:"Bên trong là gì vậy ạ?"},
+  {section:"Ngân hàng & hành chính", q:"お菓子と服です。送料はいくらですか。", qRomaji:"Okashi to fuku desu. Souryou wa ikura desu ka.", qMeaning:"Là bánh kẹo với quần áo. Phí gửi bao nhiêu vậy?",
+   a:"船便だと三千円くらいです。", aRomaji:"Funabin da to sanzen'en kurai desu.", aMeaning:"Nếu gửi đường biển thì khoảng 3000 yên."},
+  {section:"Ngân hàng & hành chính", q:"船便と航空便、どちらが早いですか。", qRomaji:"Funabin to koukuubin, dochira ga hayai desu ka.", qMeaning:"Gửi đường biển với đường hàng không, cái nào nhanh hơn?",
+   a:"航空便のほうが早いですが、高いです。", aRomaji:"Koukuubin no hou ga hayai desu ga, takai desu.", aMeaning:"Đường hàng không nhanh hơn nhưng đắt hơn."},
+  {section:"Ngân hàng & hành chính", q:"住民票が欲しいんですが、どこで申し込みますか。", qRomaji:"Juuminhyou ga hoshiin desu ga, doko de moushikomimasu ka.", qMeaning:"Tôi cần xin giấy chứng nhận cư trú, đăng ký ở đâu vậy?",
+   a:"あちらの窓口で番号札を取ってください。", aRomaji:"Achira no madoguchi de bangoufuda wo totte kudasai.", aMeaning:"Anh/chị lấy số thứ tự ở quầy đằng kia giúp em."},
+  {section:"Ngân hàng & hành chính", q:"手数料はかかりますか。", qRomaji:"Tesuuryou wa kakarimasu ka.", qMeaning:"Có mất phí không vậy?",
+   a:"はい、三百円かかります。", aRomaji:"Hai, sanbyaku en kakarimasu.", aMeaning:"Vâng, mất 300 yên."},
+  {section:"Ngân hàng & hành chính", q:"引っ越しの手続きもここでできますか。", qRomaji:"Hikkoshi no tetsuzuki mo koko de dekimasu ka.", qMeaning:"Thủ tục chuyển nhà cũng làm được ở đây phải không?",
+   a:"はい、転入届を出してください。", aRomaji:"Hai, tennyuu todoke wo dashite kudasai.", aMeaning:"Vâng, anh/chị nộp đơn khai báo chuyển đến giúp em."},
+  {section:"Ngân hàng & hành chính", q:"郵便局の窓口は何時まで開いていますか。", qRomaji:"Yuubinkyoku no madoguchi wa nanji made aite imasu ka.", qMeaning:"Quầy bưu điện mở đến mấy giờ vậy?",
+   a:"平日は夕方五時までです。", aRomaji:"Heijitsu wa yuugata goji made desu.", aMeaning:"Ngày thường thì mở đến 5 giờ chiều."},
+  {section:"Ngân hàng & hành chính", q:"前に一度、書類が足りなくて出直したことがあります。", qRomaji:"Mae ni ichido, shorui ga tarinakute denaoshita koto ga arimasu.", qMeaning:"Trước đây có một lần tôi bị thiếu giấy tờ nên phải quay lại lần nữa.",
+   a:"それはよくあることです。次は気をつけてくださいね。", aRomaji:"Sore wa yoku aru koto desu. Tsugi wa ki wo tsukete kudasai ne.", aMeaning:"Chuyện đó cũng hay xảy ra lắm. Lần sau chú ý nhé."},
+  {section:"Ngân hàng & hành chính", q:"最近、スマホでも口座が作れるようになりましたね。", qRomaji:"Saikin, sumaho demo kouza ga tsukureru you ni narimashita ne.", qMeaning:"Dạo này dùng điện thoại cũng mở được tài khoản rồi nhỉ.",
+   a:"そうですね、でも在留カードの確認は必要かもしれません。", aRomaji:"Sou desu ne, demo zairyuu kaado no kakunin wa hitsuyou kamoshiremasen.", aMeaning:"Đúng vậy, nhưng có lẽ vẫn cần xác nhận thẻ cư trú."},
+  {section:"Ngân hàng & hành chính", q:"窓口が混んでいるのに、まだ二時間も待たないといけないんですか。", qRomaji:"Madoguchi ga konde iru noni, mada nijikan mo matanaito ikenain desu ka.", qMeaning:"Quầy đông thế này mà vẫn phải đợi tận 2 tiếng nữa à?",
+   a:"すみません、午後のほうが少し空いていますよ。", aRomaji:"Sumimasen, gogo no hou ga sukoshi suite imasu yo.", aMeaning:"Xin lỗi anh/chị, buổi chiều sẽ vắng hơn một chút đó."},
+
+  // 11 - Chuyển nhà & tìm phòng
+  {section:"Chuyển nhà & tìm phòng", q:"すみません、この部屋を見てみたいんですが。", qRomaji:"Sumimasen, kono heya wo mite mitain desu ga.", qMeaning:"Xin lỗi, tôi muốn xem thử phòng này.",
+   a:"はい、今から内見できますよ。", aRomaji:"Hai, ima kara naiken dekimasu yo.", aMeaning:"Vâng, có thể xem phòng ngay bây giờ đó ạ."},
+  {section:"Chuyển nhà & tìm phòng", q:"家賃はいくらですか。", qRomaji:"Yachin wa ikura desu ka.", qMeaning:"Tiền thuê nhà bao nhiêu vậy?",
+   a:"月々七万円です。", aRomaji:"Tsukizuki nanaman'en desu.", aMeaning:"Mỗi tháng là 70,000 yên."},
+  {section:"Chuyển nhà & tìm phòng", q:"敷金と礼金は必要ですか。", qRomaji:"Shikikin to reikin wa hitsuyou desu ka.", qMeaning:"Có cần tiền đặt cọc với tiền lễ không?",
+   a:"敷金は一か月分、礼金はいりません。", aRomaji:"Shikikin wa ikkagetsu bun, reikin wa irimasen.", aMeaning:"Tiền cọc là 1 tháng tiền nhà, còn tiền lễ thì không cần."},
+  {section:"Chuyển nhà & tìm phòng", q:"駅から歩いてどのくらいですか。", qRomaji:"Eki kara aruite dono kurai desu ka.", qMeaning:"Đi bộ từ ga mất khoảng bao lâu vậy?",
+   a:"徒歩十分くらいです。", aRomaji:"Toho juppun kurai desu.", aMeaning:"Khoảng đi bộ 10 phút."},
+  {section:"Chuyển nhà & tìm phòng", q:"この部屋はペットを飼ってもいいですか。", qRomaji:"Kono heya wa petto wo katte mo ii desu ka.", qMeaning:"Phòng này có được nuôi thú cưng không?",
+   a:"申し訳ありませんが、ここはペット禁止です。", aRomaji:"Moushiwake arimasen ga, koko wa petto kinshi desu.", aMeaning:"Xin lỗi nhưng ở đây cấm nuôi thú cưng."},
+  {section:"Chuyển nhà & tìm phòng", q:"保証人がいないんですが、大丈夫ですか。", qRomaji:"Hoshounin ga inain desu ga, daijoubu desu ka.", qMeaning:"Tôi không có người bảo lãnh, có được không ạ?",
+   a:"保証会社を使うこともできますよ。", aRomaji:"Hoshou gaisha wo tsukau koto mo dekimasu yo.", aMeaning:"Cũng có thể dùng công ty bảo lãnh đó."},
+  {section:"Chuyển nhà & tìm phòng", q:"契約はいつからできますか。", qRomaji:"Keiyaku wa itsu kara dekimasu ka.", qMeaning:"Khi nào thì có thể ký hợp đồng?",
+   a:"来週の月曜日から可能です。", aRomaji:"Raishuu no getsuyoubi kara kanou desu.", aMeaning:"Từ thứ Hai tuần sau là có thể ký được."},
+  {section:"Chuyển nhà & tìm phòng", q:"引っ越しの日はいつにしましたか。", qRomaji:"Hikkoshi no hi wa itsu ni shimashita ka.", qMeaning:"Bạn quyết định ngày chuyển nhà là ngày nào rồi?",
+   a:"___に決めました。（例：来月の五日）", aRomaji:"___ ni kimemashita. (Rei: raigetsu no itsuka)", aMeaning:"Tôi quyết định là ngày ___. (Ví dụ: ngày 5 tháng sau)"},
+  {section:"Chuyển nhà & tìm phòng", q:"段ボールはどこで手に入りますか。", qRomaji:"Danbooru wa doko de te ni hairimasu ka.", qMeaning:"Thùng carton thì kiếm ở đâu vậy?",
+   a:"スーパーで無料でもらえることが多いですよ。", aRomaji:"Suupaa de muryou de moraeru koto ga ooi desu yo.", aMeaning:"Ở siêu thị thường xin được miễn phí đó."},
+  {section:"Chuyển nhà & tìm phòng", q:"引っ越し業者は自分で探したほうがいいですか。", qRomaji:"Hikkoshi gyousha wa jibun de sagashita hou ga ii desu ka.", qMeaning:"Công ty chuyển nhà thì tự mình tìm sẽ tốt hơn phải không?",
+   a:"何社か見積もりを取ったほうが安くなりますよ。", aRomaji:"Nanshaka mitsumori wo totta hou ga yasuku narimasu yo.", aMeaning:"Xin báo giá của vài công ty thì sẽ rẻ hơn đó."},
+  {section:"Chuyển nhà & tìm phòng", q:"前の部屋は駅から遠かったので、もっと近い部屋を探すことにしました。", qRomaji:"Mae no heya wa eki kara tookatta node, motto chikai heya wo sagasu koto ni shimashita.", qMeaning:"Vì phòng trước xa ga quá nên tôi quyết định tìm phòng gần hơn.",
+   a:"いいですね。今度の部屋は駅から近くなりましたか。", aRomaji:"Ii desu ne. Kondo no heya wa eki kara chikaku narimashita ka.", aMeaning:"Hay đấy. Phòng lần này gần ga hơn chưa?"},
+  {section:"Chuyển nhà & tìm phòng", q:"契約書に更新料のことが書いてあるのに、よく読んでいませんでした。", qRomaji:"Keiyakusho ni koushinryou no koto ga kaite aru noni, yoku yonde imasendeshita.", qMeaning:"Trong hợp đồng có ghi về phí gia hạn mà tôi lại không đọc kỹ.",
+   a:"契約書はサインする前に必ず全部読んだほうがいいですよ。", aRomaji:"Keiyakusho wa sain suru mae ni kanarazu zenbu yonda hou ga ii desu yo.", aMeaning:"Trước khi ký hợp đồng thì nên đọc hết toàn bộ mới đúng đó."},
+  {section:"Chuyển nhà & tìm phòng", q:"退去するとき、部屋を掃除しておかないといけないかもしれません。", qRomaji:"Taikyo suru toki, heya wo souji shite okanai to ikenai kamoshiremasen.", qMeaning:"Lúc trả phòng có lẽ phải dọn dẹp phòng sẵn trước mới được.",
+   a:"そうですね、大家さんに確認したほうがいいと思います。", aRomaji:"Sou desu ne, ooyasan ni kakunin shita hou ga ii to omoimasu.", aMeaning:"Đúng vậy, tôi nghĩ nên xác nhận với chủ nhà thì hơn."},
+
+  // 12 - Hội thoại công sở
+  {section:"Hội thoại công sở", q:"おはようございます。今日も一日よろしくお願いします。", qRomaji:"Ohayou gozaimasu. Kyou mo ichinichi yoroshiku onegaishimasu.", qMeaning:"Chào buổi sáng. Hôm nay cũng mong mọi người giúp đỡ nhé.",
+   a:"おはようございます。今日もよろしくお願いします。", aRomaji:"Ohayou gozaimasu. Kyou mo yoroshiku onegaishimasu.", aMeaning:"Chào buổi sáng. Hôm nay cũng nhờ mọi người nhé."},
+  {section:"Hội thoại công sở", q:"週末はどうでしたか。", qRomaji:"Shuumatsu wa dou deshita ka.", qMeaning:"Cuối tuần thế nào rồi?",
+   a:"ゆっくり休みました。___をしました。（例：家族と買い物）", aRomaji:"Yukkuri yasumimashita. ___ wo shimashita. (Rei: kazoku to kaimono)", aMeaning:"Tôi nghỉ ngơi thoải mái. Tôi đã ___. (Ví dụ: đi mua sắm với gia đình)"},
+  {section:"Hội thoại công sở", q:"お昼、一緒に行きませんか。", qRomaji:"Ohiru, issho ni ikimasen ka.", qMeaning:"Trưa nay đi ăn cùng không?",
+   a:"いいですね、行きましょう。何が食べたいですか。", aRomaji:"Ii desu ne, ikimashou. Nani ga tabetai desu ka.", aMeaning:"Hay đó, đi thôi. Bạn muốn ăn gì?"},
+  {section:"Hội thoại công sở", q:"ラーメンとか、どうですか。", qRomaji:"Raamen toka, dou desu ka.", qMeaning:"Ăn ramen chẳng hạn, được không?",
+   a:"いいですよ。近くにおいしい店がありますよ。", aRomaji:"Ii desu yo. Chikaku ni oishii mise ga arimasu yo.", aMeaning:"Được đó. Gần đây có quán ngon lắm."},
+  {section:"Hội thoại công sở", q:"すみません、ちょっとお願いしてもいいですか。", qRomaji:"Sumimasen, chotto onegai shite mo ii desu ka.", qMeaning:"Xin lỗi, tôi nhờ chút được không?",
+   a:"はい、何でしょうか。", aRomaji:"Hai, nan deshou ka.", aMeaning:"Vâng, có chuyện gì vậy ạ?"},
+  {section:"Hội thoại công sở", q:"このファイル、日本語で合っているか見てもらえますか。", qRomaji:"Kono fairu, nihongo de atte iru ka mite moraemasu ka.", qMeaning:"File này, bạn xem giúp tôi tiếng Nhật có đúng không được không?",
+   a:"いいですよ。後で見ておきますね。", aRomaji:"Ii desu yo. Ato de mite okimasu ne.", aMeaning:"Được thôi. Lát nữa tôi sẽ xem giúp nhé."},
+  {section:"Hội thoại công sở", q:"すみません、今日ちょっと体調が悪いので、早退してもいいですか。", qRomaji:"Sumimasen, kyou chotto taichou ga warui node, soutai shite mo ii desu ka.", qMeaning:"Xin lỗi, hôm nay tôi hơi mệt trong người nên xin phép về sớm được không ạ?",
+   a:"大丈夫ですよ。お大事にしてください。", aRomaji:"Daijoubu desu yo. Odaiji ni shite kudasai.", aMeaning:"Được chứ. Mong bạn mau khỏe nhé."},
+  {section:"Hội thoại công sở", q:"明日、有給を取ってもいいですか。", qRomaji:"Ashita, yuukyuu wo totte mo ii desu ka.", qMeaning:"Ngày mai tôi xin nghỉ phép được không?",
+   a:"いいですよ。何か用事ですか。", aRomaji:"Ii desu yo. Nanika youji desu ka.", aMeaning:"Được chứ. Có việc gì à?"},
+  {section:"Hội thoại công sở", q:"今日は残業ですか。", qRomaji:"Kyou wa zangyou desu ka.", qMeaning:"Hôm nay làm thêm giờ à?",
+   a:"はい、締め切りが近いので、少し残ります。", aRomaji:"Hai, shimekiri ga chikai node, sukoshi nokorimasu.", aMeaning:"Vâng, vì hạn chót gần rồi nên tôi ở lại làm thêm chút."},
+  {section:"Hội thoại công sở", q:"今度の飲み会、参加しますか。", qRomaji:"Kondo no nomikai, sanka shimasu ka.", qMeaning:"Buổi liên hoan lần tới, bạn có tham gia không?",
+   a:"はい、ぜひ参加したいです。", aRomaji:"Hai, zehi sanka shitai desu.", aMeaning:"Có, tôi rất muốn tham gia."},
+  {section:"Hội thoại công sở", q:"入社したころは緊張していましたが、最近は同僚と気軽に話せるようになりました。", qRomaji:"Nyuusha shita koro wa kinchou shite imashita ga, saikin wa douryou to kigaru ni hanaseru you ni narimashita.", qMeaning:"Hồi mới vào công ty tôi hay hồi hộp, nhưng dạo này đã có thể nói chuyện thoải mái với đồng nghiệp rồi.",
+   a:"それはよかったですね。最初はみんな緊張しますよ。", aRomaji:"Sore wa yokatta desu ne. Saisho wa minna kinchou shimasu yo.", aMeaning:"Vậy thì tốt quá. Ai lúc đầu cũng hồi hộp cả thôi."},
+  {section:"Hội thoại công sở", q:"忙しいのに手伝ってくれて、本当にありがとうございます。", qRomaji:"Isogashii noni tetsudatte kurete, hontou ni arigatou gozaimasu.", qMeaning:"Đang bận mà vẫn giúp tôi, cảm ơn bạn nhiều lắm.",
+   a:"いえいえ、困った時はお互い様ですよ。", aRomaji:"Ie ie, komatta toki wa otagaisama desu yo.", aMeaning:"Có gì đâu, lúc khó khăn thì giúp nhau là chuyện thường mà."},
+  {section:"Hội thoại công sở", q:"定時で帰れることがあるので、最近は趣味の時間が増えました。", qRomaji:"Teiji de kaereru koto ga aru node, saikin wa shumi no jikan ga fuemashita.", qMeaning:"Vì thỉnh thoảng tan làm đúng giờ được nên dạo này thời gian dành cho sở thích tăng lên rồi.",
+   a:"いいですね。私も定時で帰りたいです。", aRomaji:"Ii desu ne. Watashi mo teiji de kaeritai desu.", aMeaning:"Hay quá. Tôi cũng muốn tan làm đúng giờ."},
+  {section:"Hội thoại công sở", q:"お先に失礼します。お疲れ様でした。", qRomaji:"Osaki ni shitsurei shimasu. Otsukaresama deshita.", qMeaning:"Tôi xin phép về trước. Mọi người vất vả rồi ạ.",
+   a:"お疲れ様でした。また明日。", aRomaji:"Otsukaresama deshita. Mata ashita.", aMeaning:"Vất vả rồi. Hẹn mai gặp lại."},
+
+  // 13 - 報連相 công sở
+  {section:"報連相 công sở", q:"今、どんな仕事をしていますか。", qRomaji:"Ima, donna shigoto wo shiteimasu ka.", qMeaning:"Bây giờ bạn đang làm công việc gì vậy?",
+   a:"今はウェブサイトの開発をしています。", aRomaji:"Ima wa webusaito no kaihatsu wo shiteimasu.", aMeaning:"Bây giờ mình đang làm phát triển website."},
+  {section:"報連相 công sở", q:"その仕事の進捗はどうですか。", qRomaji:"Sono shigoto no shinchoku wa dou desu ka.", qMeaning:"Tiến độ công việc đó thế nào rồi?",
+   a:"順調です。予定通りに進んでいます。", aRomaji:"Junchou desu. Yotei doori ni susunde imasu.", aMeaning:"Ổn ạ. Đang tiến hành đúng như dự kiến."},
+  {section:"報連相 công sở", q:"何か問題はありませんか。", qRomaji:"Nanika mondai wa arimasen ka.", qMeaning:"Có vấn đề gì không?",
+   a:"今のところ、大きい問題はありません。", aRomaji:"Ima no tokoro, ookii mondai wa arimasen.", aMeaning:"Hiện tại thì chưa có vấn đề gì lớn ạ."},
+  {section:"報連相 công sở", q:"進捗を報告してもらえますか。", qRomaji:"Shinchoku wo houkoku shite moraemasu ka.", qMeaning:"Bạn báo cáo tiến độ giúp mình được không?",
+   a:"はい、今すぐ報告します。", aRomaji:"Hai, ima sugu houkoku shimasu.", aMeaning:"Vâng, em báo cáo ngay đây ạ."},
+  {section:"報連相 công sở", q:"締め切りに間に合いそうですか。", qRomaji:"Shimekiri ni maniai sou desu ka.", qMeaning:"Có kịp deadline không?",
+   a:"すみません、少し遅れるかもしれません。", aRomaji:"Sumimasen, sukoshi okureru kamoshiremasen.", aMeaning:"Xin lỗi, có thể sẽ hơi trễ ạ."},
+  {section:"報連相 công sở", q:"どうして遅れているんですか。", qRomaji:"Doushite okurete irun desu ka.", qMeaning:"Sao lại bị trễ vậy?",
+   a:"想定外の問題が発生しました。", aRomaji:"Soutei gai no mondai ga hassei shimashita.", aMeaning:"Có phát sinh vấn đề ngoài dự kiến ạ."},
+  {section:"報連相 công sở", q:"それは大変ですね。もう上司に連絡しましたか。", qRomaji:"Sore wa taihen desu ne. Mou joushi ni renraku shimashita ka.", qMeaning:"Vất vả quá nhỉ. Đã liên lạc với cấp trên chưa?",
+   a:"はい、さっきメールで連絡しました。", aRomaji:"Hai, sakki meeru de renraku shimashita.", aMeaning:"Vâng, lúc nãy em liên lạc bằng mail rồi ạ."},
+  {section:"報連相 công sở", q:"何か困っていることがあれば、相談してください。", qRomaji:"Nanika komatte iru koto ga areba, soudan shite kudasai.", qMeaning:"Nếu có gì khó khăn thì cứ trao đổi với tôi nhé.",
+   a:"ありがとうございます。実は一つ相談したいことがあります。", aRomaji:"Arigatou gozaimasu. Jitsu wa hitotsu soudan shitai koto ga arimasu.", aMeaning:"Cảm ơn anh/chị. Thật ra em có một chuyện muốn xin ý kiến ạ."},
+  {section:"報連相 công sở", q:"どんなことですか。", qRomaji:"Donna koto desu ka.", qMeaning:"Chuyện gì vậy?",
+   a:"このやり方で進めていいか、確認したいです。", aRomaji:"Kono yarikata de susumete ii ka, kakunin shitai desu.", aMeaning:"Em muốn xác nhận là làm theo cách này có ổn không ạ."},
+  {section:"報連相 công sở", q:"わかりました。資料を共有してもらえますか。", qRomaji:"Wakarimashita. Shiryou wo kyouyuu shite moraemasu ka.", qMeaning:"Được rồi. Bạn chia sẻ tài liệu giúp mình nhé?",
+   a:"はい、今日中に共有します。", aRomaji:"Hai, kyoujuu ni kyouyuu shimasu.", aMeaning:"Vâng, trong hôm nay em sẽ chia sẻ ạ."},
+  {section:"報連相 công sở", q:"前にも同じような問題があったことがありますか。", qRomaji:"Mae ni mo onaji you na mondai ga atta koto ga arimasu ka.", qMeaning:"Trước đây đã từng có vấn đề tương tự chưa?",
+   a:"はい、前のプロジェクトでも同じようなことがありました。", aRomaji:"Hai, mae no purojekuto demo onaji you na koto ga arimashita.", aMeaning:"Vâng, ở dự án trước cũng từng có chuyện tương tự."},
+  {section:"報連相 công sở", q:"最近、自分から報告するようになりましたか。", qRomaji:"Saikin, jibun kara houkoku suru you ni narimashita ka.", qMeaning:"Dạo này bạn đã chủ động báo cáo hơn chưa?",
+   a:"はい、前は忘れることが多かったですが、最近は自分から報告するようになりました。", aRomaji:"Hai, mae wa wasureru koto ga ookatta desu ga, saikin wa jibun kara houkoku suru you ni narimashita.", aMeaning:"Vâng, trước đây em hay quên báo cáo, nhưng gần đây em đã chủ động báo cáo hơn rồi."},
+  {section:"報連相 công sở", q:"相談しないで進めると、どうなるかもしれませんか。", qRomaji:"Soudan shinaide susumeru to, dou naru kamoshiremasen ka.", qMeaning:"Nếu không hỏi ý kiến mà tự làm luôn thì có thể xảy ra chuyện gì?",
+   a:"相談しないで進めると、後で大きい問題になるかもしれません。", aRomaji:"Soudan shinaide susumeru to, ato de ookii mondai ni naru kamoshiremasen.", aMeaning:"Nếu không trao đổi trước mà cứ làm thì sau này có thể thành vấn đề lớn."},
+
+  // 14 - Du lịch
+  {section:"Du lịch", q:"すみません、部屋を予約したいんですが。", qRomaji:"Sumimasen, heya wo yoyaku shitain desu ga.", qMeaning:"Xin lỗi, tôi muốn đặt phòng ạ.",
+   a:"はい、いつからいつまでですか。", aRomaji:"Hai, itsu kara itsu made desu ka.", aMeaning:"Vâng, từ ngày nào đến ngày nào ạ?"},
+  {section:"Du lịch", q:"今日から三日間、部屋は空いていますか。", qRomaji:"Kyou kara mikkakan, heya wa aite imasu ka.", qMeaning:"Từ hôm nay trong ba ngày, còn phòng trống không ạ?",
+   a:"はい、シングルルームでよろしいですか。", aRomaji:"Hai, shinguru ruumu de yoroshii desu ka.", aMeaning:"Vâng, phòng đơn được không ạ?"},
+  {section:"Du lịch", q:"今度の休みに、どこか旅行する予定はありますか。", qRomaji:"Kondo no yasumi ni, dokoka ryokou suru yotei wa arimasu ka.", qMeaning:"Kỳ nghỉ tới bạn có định đi du lịch đâu không?",
+   a:"___（例：はい、沖縄に行く予定です。）", aRomaji:"(Vd: Hai, Okinawa ni iku yotei desu)", aMeaning:"(Ví dụ: Có, mình định đi Okinawa.)"},
+  {section:"Du lịch", q:"この近くに観光地はありますか。", qRomaji:"Kono chikaku ni kankouchi wa arimasu ka.", qMeaning:"Gần đây có điểm du lịch nào không ạ?",
+   a:"はい、歩いて十分くらいのところに有名なお寺があります。", aRomaji:"Hai, aruite juppun kurai no tokoro ni yuumei na otera ga arimasu.", aMeaning:"Có ạ, đi bộ khoảng mười phút là có một ngôi chùa nổi tiếng."},
+  {section:"Du lịch", q:"そこの入場券はどこで買えますか。", qRomaji:"Soko no nyuujouken wa doko de kaemasu ka.", qMeaning:"Vé vào cửa chỗ đó mua ở đâu ạ?",
+   a:"入り口の券売機で買えますよ。", aRomaji:"Iriguchi no kenbaiki de kaemasu yo.", aMeaning:"Mua ở máy bán vé ngay cổng vào đó ạ."},
+  {section:"Du lịch", q:"荷物を預けたいんですが、いいですか。", qRomaji:"Nimotsu wo azuketain desu ga, ii desu ka.", qMeaning:"Tôi muốn gửi hành lý, được không ạ?",
+   a:"はい、チェックインの時間まで預かります。", aRomaji:"Hai, chekku in no jikan made azukarimasu.", aMeaning:"Vâng, chúng tôi giữ giúp đến giờ check-in ạ."},
+  {section:"Du lịch", q:"空港までどうやって行けばいいですか。", qRomaji:"Kuukou made douyatte ikeba ii desu ka.", qMeaning:"Đi ra sân bay bằng cách nào là tiện nhất ạ?",
+   a:"リムジンバスで行くのが一番便利です。", aRomaji:"Rimujin basu de iku no ga ichiban benri desu.", aMeaning:"Đi bằng xe buýt limousine là tiện nhất ạ."},
+  {section:"Du lịch", q:"搭乗は何時からですか。", qRomaji:"Toujou wa nanji kara desu ka.", qMeaning:"Mấy giờ bắt đầu lên máy bay ạ?",
+   a:"出発の一時間前から搭乗が始まります。", aRomaji:"Shuppatsu no ichijikan mae kara toujou ga hajimarimasu.", aMeaning:"Bắt đầu lên máy bay từ một tiếng trước giờ khởi hành ạ."},
+  {section:"Du lịch", q:"すみません、両替はどこでできますか。", qRomaji:"Sumimasen, ryougae wa doko de dekimasu ka.", qMeaning:"Xin lỗi, đổi tiền ở đâu được ạ?",
+   a:"あちらの銀行の窓口でできますよ。", aRomaji:"Achira no ginkou no madoguchi de dekimasu yo.", aMeaning:"Đổi ở quầy ngân hàng đằng kia được đó ạ."},
+  {section:"Du lịch", q:"パスポートを見せてもらえますか。", qRomaji:"Pasupooto wo misete moraemasu ka.", qMeaning:"Cho tôi xem hộ chiếu được không ạ?",
+   a:"はい、どうぞ。", aRomaji:"Hai, douzo.", aMeaning:"Vâng, đây ạ."},
+  {section:"Du lịch", q:"この飛行機は何時に到着しますか。", qRomaji:"Kono hikouki wa nanji ni touchaku shimasu ka.", qMeaning:"Chuyến bay này mấy giờ đến ạ?",
+   a:"予定では午後三時に到着します。", aRomaji:"Yotei dewa gogo sanji ni touchaku shimasu.", aMeaning:"Theo dự kiến thì ba giờ chiều sẽ đến ạ."},
+  {section:"Du lịch", q:"日本に行ったことがありますか。", qRomaji:"Nihon ni itta koto ga arimasu ka.", qMeaning:"Bạn từng đi Nhật chưa?",
+   a:"はい、二回行ったことがあります。", aRomaji:"Hai, nikai itta koto ga arimasu.", aMeaning:"Có, mình từng đi hai lần rồi."},
+  {section:"Du lịch", q:"前は誰かに予約を頼んでいましたが、最近は自分でできるようになりましたか。", qRomaji:"Mae wa dareka ni yoyaku wo tanonde imashita ga, saikin wa jibun de dekiru you ni narimashita ka.", qMeaning:"Trước đây bạn hay nhờ ai đó đặt giúp, gần đây tự làm được chưa?",
+   a:"はい、アプリのおかげで、自分で予約できるようになりました。", aRomaji:"Hai, apuri no okage de, jibun de yoyaku dekiru you ni narimashita.", aMeaning:"Có, nhờ có app mà giờ mình tự đặt được rồi."},
+  {section:"Du lịch", q:"天気が悪いと、観光できないかもしれませんね。", qRomaji:"Tenki ga warui to, kankou dekinai kamoshiremasen ne.", qMeaning:"Nếu thời tiết xấu thì có thể sẽ không đi tham quan được nhỉ.",
+   a:"そうですね、雨が降ったら予定を変えるかもしれません。", aRomaji:"Sou desu ne, ame ga futtara yotei wo kaeru kamoshiremasen.", aMeaning:"Đúng vậy, nếu mưa thì có thể sẽ phải đổi lịch trình."},
+
+  // 15 - Nêu ý kiến & lời khuyên
+  {section:"Nêu ý kiến & lời khuyên", q:"この提案について、どう思いますか。", qRomaji:"Kono teian ni tsuite, dou omoimasu ka.", qMeaning:"Bạn nghĩ sao về đề xuất này?",
+   a:"いいと思います。賛成です。", aRomaji:"Ii to omoimasu. Sansei desu.", aMeaning:"Mình thấy hay đó. Mình đồng ý."},
+  {section:"Nêu ý kiến & lời khuyên", q:"私はAプランがいいと思うんですが、どうですか。", qRomaji:"Watashi wa A puran ga ii to omoun desu ga, dou desu ka.", qMeaning:"Mình thấy phương án A tốt hơn, bạn thấy sao?",
+   a:"うーん、私はちょっと違う意見です。", aRomaji:"Uun, watashi wa chotto chigau iken desu.", aMeaning:"Ừm, mình lại có ý kiến hơi khác một chút."},
+  {section:"Nêu ý kiến & lời khuyên", q:"この二つのプランなら、あなたはどちらを選びますか。", qRomaji:"Kono futatsu no puran nara, anata wa dochira wo erabimasu ka.", qMeaning:"Trong hai phương án này thì bạn chọn cái nào?",
+   a:"___（例：私はAプランを選びます。理由は安いからです。）", aRomaji:"(Vd: Watashi wa A puran wo erabimasu. Riyuu wa yasui kara desu)", aMeaning:"(Ví dụ: Mình chọn phương án A. Lý do là vì rẻ hơn.)"},
+  {section:"Nêu ý kiến & lời khuyên", q:"どうしてそう思うんですか。", qRomaji:"Doushite sou omoun desu ka.", qMeaning:"Sao bạn lại nghĩ vậy?",
+   a:"Bプランのほうが安いので、そちらがいいと思います。", aRomaji:"B puran no hou ga yasui node, sochira ga ii to omoimasu.", aMeaning:"Vì phương án B rẻ hơn nên mình thấy cái đó tốt hơn."},
+  {section:"Nêu ý kiến & lời khuyên", q:"ちょっと相談したいことがあるんですが、いいですか。", qRomaji:"Chotto soudan shitai koto ga arun desu ga, ii desu ka.", qMeaning:"Mình có chuyện muốn xin ý kiến, được không?",
+   a:"もちろんです。どうしましたか。", aRomaji:"Mochiron desu. Dou shimashita ka.", aMeaning:"Được chứ. Có chuyện gì vậy?"},
+  {section:"Nêu ý kiến & lời khuyên", q:"今の仕事を続けるか、転職するか悩んでいるんです。", qRomaji:"Ima no shigoto wo tsuzukeru ka, tenshoku suru ka nayande irun desu.", qMeaning:"Mình đang băn khoăn không biết nên tiếp tục công việc hiện tại hay chuyển việc.",
+   a:"それは大変ですね。何かアドバイスが欲しいですか。", aRomaji:"Sore wa taihen desu ne. Nanika adobaisu ga hoshii desu ka.", aMeaning:"Nghe khó khăn quá nhỉ. Bạn muốn mình cho lời khuyên gì không?"},
+  {section:"Nêu ý kiến & lời khuyên", q:"AとBを比較すると、どちらがいいと思いますか。", qRomaji:"A to B wo hikaku suru to, dochira ga ii to omoimasu ka.", qMeaning:"So sánh A với B thì bạn thấy cái nào tốt hơn?",
+   a:"値段だけで見ると、Aのほうが安いです。でも質はBのほうがいいです。", aRomaji:"Nedan dake de miru to, A no hou ga yasui desu. Demo shitsu wa B no hou ga ii desu.", aMeaning:"Nếu chỉ xét giá thì A rẻ hơn. Nhưng chất lượng thì B tốt hơn."},
+  {section:"Nêu ý kiến & lời khuyên", q:"Aのメリットとデメリットは何ですか。", qRomaji:"A no meritto to demeritto wa nan desu ka.", qMeaning:"Ưu điểm và nhược điểm của A là gì?",
+   a:"メリットは安いことですが、デメリットはちょっと時間がかかることです。", aRomaji:"Meritto wa yasui koto desu ga, demeritto wa chotto jikan ga kakaru koto desu.", aMeaning:"Ưu điểm là rẻ, nhưng nhược điểm là hơi tốn thời gian."},
+  {section:"Nêu ý kiến & lời khuyên", q:"それなら、私はこうしたほうがいいと思うんですが。", qRomaji:"Sorenara, watashi wa kou shita hou ga ii to omoun desu ga.", qMeaning:"Vậy thì, mình nghĩ nên làm thế này thì hơn.",
+   a:"なるほど、それもいいアイデアですね。", aRomaji:"Naruhodo, sore mo ii aidea desu ne.", aMeaning:"À ra vậy, đó cũng là một ý hay đó."},
+  {section:"Nêu ý kiến & lời khuyên", q:"すみません、その意見にはちょっと賛成できません。", qRomaji:"Sumimasen, sono iken ni wa chotto sansei dekimasen.", qMeaning:"Xin lỗi, ý kiến đó thì mình không đồng ý lắm.",
+   a:"そうですか。じゃあ、どうすればいいと思いますか。", aRomaji:"Sou desu ka. Jaa, dou sureba ii to omoimasu ka.", aMeaning:"Vậy à. Vậy theo bạn nên làm thế nào?"},
+  {section:"Nêu ý kiến & lời khuyên", q:"一つ提案してもいいですか。", qRomaji:"Hitotsu teian shite mo ii desu ka.", qMeaning:"Mình đề xuất một ý được không?",
+   a:"もちろんです。ぜひ聞かせてください。", aRomaji:"Mochiron desu. Zehi kikasete kudasai.", aMeaning:"Được chứ. Cứ nói cho mình nghe đi."},
+  {section:"Nêu ý kiến & lời khuyên", q:"前はすぐ人に相談していましたが、最近は自分で決められるようになりましたか。", qRomaji:"Mae wa sugu hito ni soudan shite imashita ga, saikin wa jibun de kimerareru you ni narimashita ka.", qMeaning:"Trước đây bạn hay hỏi ý kiến người khác ngay, gần đây tự quyết định được chưa?",
+   a:"はい、前は自分で決められませんでしたが、最近は自分で決められるようになりました。", aRomaji:"Hai, mae wa jibun de kimeraremasen deshita ga, saikin wa jibun de kimerareru you ni narimashita.", aMeaning:"Vâng, trước đây mình không tự quyết được, nhưng gần đây mình đã tự quyết định được rồi."},
+  {section:"Nêu ý kiến & lời khuyên", q:"せっかく提案したのに、あまり賛成してもらえなかったことがありますか。", qRomaji:"Sekkaku teian shita noni, amari sansei shite moraenakatta koto ga arimasu ka.", qMeaning:"Bạn từng khó công đề xuất mà không được ủng hộ mấy chưa?",
+   a:"はい、いい提案だと思ったのに、反対されたことがあります。", aRomaji:"Hai, ii teian da to omotta noni, hantai sareta koto ga arimasu.", aMeaning:"Có, mình từng nghĩ đó là đề xuất hay mà lại bị phản đối."},
+  {section:"Nêu ý kiến & lời khuyên", q:"急いで決めると、後で後悔するかもしれませんね。", qRomaji:"Isoide kimeru to, ato de koukai suru kamoshiremasen ne.", qMeaning:"Nếu quyết định vội thì sau này có thể sẽ hối hận nhỉ.",
+   a:"そうですね、時間をかけて考えたほうが後悔しないかもしれません。", aRomaji:"Sou desu ne, jikan wo kakete kangaeta hou ga koukai shinai kamoshiremasen.", aMeaning:"Đúng vậy, dành thời gian suy nghĩ kỹ thì có lẽ sẽ không phải hối hận."},
+];
+
+let order = [];
+let idx = 0;
+
+const els = {
+  sectionFilter: document.getElementById('sectionFilter'),
+  shuffleBtn: document.getElementById('shuffleBtn'),
+  progress: document.getElementById('progress'),
+  sectionTag: document.getElementById('sectionTag'),
+  q: document.getElementById('q'),
+  qRomaji: document.getElementById('qRomaji'),
+  qMeaning: document.getElementById('qMeaning'),
+  answerBlock: document.getElementById('answerBlock'),
+  a: document.getElementById('a'),
+  aRomaji: document.getElementById('aRomaji'),
+  aMeaning: document.getElementById('aMeaning'),
+  revealBtn: document.getElementById('revealBtn'),
+  nextBtn: document.getElementById('nextBtn'),
+  streak: document.getElementById('streak'),
+};
+
+function buildSectionOptions(){
+  const sections = [...new Set(DATA.map(d => d.section))];
+  els.sectionFilter.innerHTML = sections.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function currentPool(){
+  const chosen = els.sectionFilter.value;
+  return DATA.filter(d => d.section === chosen);
+}
+
+function startSession(){
+  order = shuffle(currentPool().map((_,i)=>i));
+  idx = 0;
+  render();
+}
+
+function render(){
+  const pool = currentPool();
+  if(pool.length === 0){ return; }
+  const item = pool[order[idx]];
+  els.sectionTag.textContent = item.section;
+  els.q.textContent = item.q;
+  els.qRomaji.textContent = item.qRomaji;
+  els.qMeaning.textContent = item.qMeaning;
+  els.a.textContent = item.a;
+  els.aRomaji.textContent = item.aRomaji;
+  els.aMeaning.textContent = item.aMeaning;
+  els.answerBlock.classList.add('hidden');
+  els.nextBtn.classList.add('hidden');
+  els.revealBtn.classList.remove('hidden');
+  els.progress.textContent = `Câu ${idx+1} / ${pool.length}`;
+}
+
+function reveal(){
+  els.answerBlock.classList.remove('hidden');
+  els.revealBtn.classList.add('hidden');
+  els.nextBtn.classList.remove('hidden');
+}
+
+function next(){
+  const pool = currentPool();
+  idx = (idx+1) % pool.length;
+  if(idx === 0){ order = shuffle(pool.map((_,i)=>i)); }
+  render();
+  bumpStreak();
+}
+
+function bumpStreak(){
+  try{
+    const today = new Date().toISOString().slice(0,10);
+    const raw = localStorage.getItem('kaiwa_streak');
+    const data = raw ? JSON.parse(raw) : {lastDate:null, streak:0, total:0};
+    data.total = (data.total||0) + 1;
+    if(data.lastDate !== today){
+      const yest = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+      data.streak = (data.lastDate === yest) ? (data.streak||0) + 1 : 1;
+      data.lastDate = today;
+    }
+    localStorage.setItem('kaiwa_streak', JSON.stringify(data));
+    renderStreak(data);
+  }catch(e){ /* localStorage unavailable, ignore */ }
+}
+
+function renderStreak(data){
+  if(!data){
+    try{
+      const raw = localStorage.getItem('kaiwa_streak');
+      data = raw ? JSON.parse(raw) : null;
+    }catch(e){ data = null; }
+  }
+  if(!data){ els.streak.textContent = ''; return; }
+  els.streak.textContent = `🔥 Streak: ${data.streak || 0} ngày liên tiếp · Tổng số câu đã ôn: ${data.total || 0}`;
+}
+
+els.sectionFilter.addEventListener('change', startSession);
+els.shuffleBtn.addEventListener('click', startSession);
+els.revealBtn.addEventListener('click', reveal);
+els.nextBtn.addEventListener('click', next);
+
+document.addEventListener('keydown', (e) => {
+  if(e.code === 'Space'){ e.preventDefault(); if(!els.revealBtn.classList.contains('hidden')) reveal(); }
+  if(e.code === 'Enter'){ if(!els.nextBtn.classList.contains('hidden')) next(); }
+});
+
+buildSectionOptions();
+startSession();
+renderStreak();
+</script>
+</body>
+</html>
