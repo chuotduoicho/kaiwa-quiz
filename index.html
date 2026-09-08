@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kaiwa Quiz">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="Quiz phan xa tieng Nhat offline: 366 cau hoi tren 16 chu de (phong van BrSE + doi song hang ngay, N4-N3), co doc giong noi va gan nhan ngu phap N3.">
+<meta name="description" content="Quiz phan xa tieng Nhat offline: 414 cau hoi tren 16 chu de (phong van BrSE + doi song hang ngay, N4-N3), gan nhan ~100 mau ngu phap N3, co doc giong noi.">
 <style>
   :root{
     --bg:#f7f5f2; --card:#ffffff; --ink:#1f2430; --sub:#6b7280;
@@ -357,6 +357,15 @@ const DATA = [
   {section:"Tự giới thiệu & sở thích", grammar:"～たびに – mỗi khi, mỗi lần",
   q:"音楽（おんがく）を聞（き）くのが好（す）きだそうですね。", qRomaji:"Ongaku wo kiku no ga suki da sou desu ne.", qMeaning:"Nghe nói bạn thích nghe nhạc nhỉ.",
    a:"はい、ストレスを感（かん）じるたびに、好（す）きな音楽（おんがく）を聞（き）きます。", aRomaji:"Hai, sutoresu wo kanjiru tabi ni, suki na ongaku wo kikimasu.", aMeaning:"Vâng, mỗi khi cảm thấy căng thẳng, tôi đều nghe nhạc mình thích."},
+  {section:"Tự giới thiệu & sở thích", grammar:"～に加えて – thêm vào đó",
+  q:"趣味（しゅみ）は読書（どくしょ）だけですか。", qRomaji:"Shumi wa dokusho dake desu ka.", qMeaning:"Sở thích của bạn chỉ có đọc sách thôi à?",
+   a:"いいえ、読書（どくしょ）に加（くわ）えて、最近（さいきん）は写真（しゃしん）を撮（と）ることにも興味（きょうみ）があります。", aRomaji:"Iie, dokusho ni kuwaete, saikin wa shashin wo toru koto ni mo kyoumi ga arimasu.", aMeaning:"Không, ngoài đọc sách ra, dạo này tôi còn hứng thú với việc chụp ảnh nữa."},
+  {section:"Tự giới thiệu & sở thích", grammar:"～反面 – mặt trái lại",
+  q:"毎日（まいにち）ジムに通（かよ）うことについてどう思（おも）いますか。", qRomaji:"Mainichi jimu ni kayou koto ni tsuite dou omoimasu ka.", qMeaning:"Bạn nghĩ sao về việc mỗi ngày đều đến phòng gym?",
+   a:"体力（たいりょく）がつく反面（はんめん）、時間（じかん）がかかって大変（たいへん）です。", aRomaji:"Tairyoku ga tsuku hanmen, jikan ga kakatte taihen desu.", aMeaning:"Mặt được là có thể lực tốt hơn, nhưng mặt trái lại là tốn thời gian nên khá vất vả."},
+  {section:"Tự giới thiệu & sở thích", grammar:"～ものの – tuy...nhưng",
+  q:"料理教室（りょうりきょうしつ）に通（かよ）ってから、料理（りょうり）が上手（じょうず）になりましたか。", qRomaji:"Ryouri kyoushitsu ni kayotte kara, ryouri ga jouzu ni narimashita ka.", qMeaning:"Từ khi đi học lớp nấu ăn, bạn nấu ăn giỏi lên chưa?",
+   a:"料理教室（りょうりきょうしつ）に半年（はんとし）通（かよ）ったものの、まだあまり上手（じょうず）にはなっていません。", aRomaji:"Ryouri kyoushitsu ni hantoshi kayotta monono, mada amari jouzu ni wa natte imasen.", aMeaning:"Tuy đã học lớp nấu ăn nửa năm rồi, nhưng tôi vẫn chưa giỏi lắm."},
 
   // 02 - Gia đình
   {section:"Gia đình",q:"ご家族（かぞく）は何人（なんにん）ですか。", qRomaji:"Go-kazoku wa nan-nin desu ka.", qMeaning:"Gia đình bạn có mấy người?",
@@ -409,6 +418,15 @@ const DATA = [
   {section:"Gia đình", grammar:"～がち – hay có xu hướng",
   q:"一人暮（ひとりぐ）らしをしていると、家族（かぞく）のことを忘（わす）れがちですか。", qRomaji:"Hitorigurashi wo shite iru to, kazoku no koto wo wasuregachi desu ka.", qMeaning:"Sống một mình thì bạn có hay quên mất chuyện gia đình không?",
    a:"忙（いそが）しいと、つい連絡（れんらく）を忘（わす）れがちになりますが、気（き）をつけています。", aRomaji:"Isogashii to, tsui renraku wo wasuregachi ni narimasu ga, ki wo tsukete imasu.", aMeaning:"Khi bận thì tôi hay có xu hướng quên liên lạc, nhưng tôi cũng chú ý điều đó."},
+  {section:"Gia đình", grammar:"～あげく(に) – rốt cuộc, kết cục là",
+  q:"実家（じっか）に帰（かえ）るかどうか、迷（まよ）いましたか。", qRomaji:"Jikka ni kaeru ka dou ka, mayoimashita ka.", qMeaning:"Bạn có phân vân chuyện có nên về nhà bố mẹ không?",
+   a:"はい、家族（かぞく）と何度（なんど）も話（はな）し合（あ）ったあげく、実家（じっか）に帰（かえ）ることに決（き）めました。", aRomaji:"Hai, kazoku to nando mo hanashiatta ageku, jikka ni kaeru koto ni kimemashita.", aMeaning:"Có, sau khi bàn bạc với gia đình nhiều lần, rốt cuộc tôi quyết định về nhà bố mẹ."},
+  {section:"Gia đình", grammar:"～最中に – đang giữa lúc",
+  q:"昨日（きのう）、家族（かぞく）で夕食（ゆうしょく）を食（た）べている時（とき）、何（なに）かありましたか。", qRomaji:"Kinou, kazoku de yuushoku wo tabete iru toki, nanika arimashita ka.", qMeaning:"Hôm qua lúc cả nhà đang ăn tối, có chuyện gì xảy ra không?",
+   a:"はい、夕食（ゆうしょく）を食（た）べている最中（さいちゅう）に、兄（あに）から電話（でんわ）がかかってきました。", aRomaji:"Hai, yuushoku wo tabete iru saichuu ni, ani kara denwa ga kakatte kimashita.", aMeaning:"Có, đúng lúc đang ăn tối thì anh trai tôi gọi điện tới."},
+  {section:"Gia đình", grammar:"～に限（かぎ）らず – không chỉ giới hạn ở",
+  q:"家族（かぞく）で集（あつ）まるのは週末（しゅうまつ）だけですか。", qRomaji:"Kazoku de atsumaru no wa shuumatsu dake desu ka.", qMeaning:"Gia đình bạn chỉ tụ họp vào cuối tuần thôi à?",
+   a:"いいえ、週末（しゅうまつ）に限（かぎ）らず、平日（へいじつ）でも時間（じかん）があれば家族（かぞく）で集（あつ）まります。", aRomaji:"Iie, shuumatsu ni kagirazu, heijitsu demo jikan ga areba kazoku de atsumarimasu.", aMeaning:"Không, không chỉ cuối tuần, mà kể cả ngày thường nếu có thời gian gia đình tôi cũng tụ họp."},
 
   // 03 - Thời tiết & mùa
   {section:"Thời tiết & mùa",q:"今日（きょう）の天気（てんき）はどうですか。", qRomaji:"Kyou no tenki wa dou desu ka.", qMeaning:"Thời tiết hôm nay thế nào?",
@@ -461,6 +479,15 @@ const DATA = [
   {section:"Thời tiết & mùa", grammar:"～がち – hay có xu hướng",
   q:"雨（あめ）の日（ひ）は家（いえ）にいることが多（おお）いですか。", qRomaji:"Ame no hi wa ie ni iru koto ga ooi desu ka.", qMeaning:"Ngày mưa bạn có hay ở nhà không?",
    a:"はい、雨（あめ）の日（ひ）は出（で）かけるのが面倒（めんどう）で、家（いえ）にいがちです。", aRomaji:"Hai, ame no hi wa dekakeru no ga mendou de, ie ni igachi desu.", aMeaning:"Có, ngày mưa tôi hay ngại ra ngoài nên có xu hướng ở nhà."},
+  {section:"Thời tiết & mùa", grammar:"～に沿って – dọc theo, theo",
+  q:"秋（あき）になると、よく散歩（さんぽ）しますか。", qRomaji:"Aki ni naru to, yoku sanpo shimasu ka.", qMeaning:"Khi vào mùa thu bạn có hay đi dạo không?",
+   a:"はい、川（かわ）に沿（そ）って散歩（さんぽ）しながら、紅葉（こうよう）を楽（たの）しみます。", aRomaji:"Hai, kawa ni sotte sanpo shinagara, kouyou wo tanoshimimasu.", aMeaning:"Có, tôi vừa đi dạo dọc theo bờ sông vừa ngắm lá đỏ mùa thu."},
+  {section:"Thời tiết & mùa", grammar:"～につれて – cùng với, theo đà",
+  q:"秋（あき）が深（ふか）まると、気温（きおん）はどう変化（へんか）しますか。", qRomaji:"Aki ga fukamaru to, kion wa dou henka shimasu ka.", qMeaning:"Khi mùa thu càng sâu đậm thì nhiệt độ thay đổi thế nào?",
+   a:"秋（あき）が深（ふか）まるにつれて、気温（きおん）がどんどん下（さ）がっていきます。", aRomaji:"Aki ga fukamaru ni tsurete, kion ga dondon sagatte ikimasu.", aMeaning:"Cùng với việc mùa thu càng sâu đậm, nhiệt độ giảm dần đi."},
+  {section:"Thời tiết & mùa", grammar:"～に応（おう）じて – tùy theo, ứng với",
+  q:"服装（ふくそう）はどうやって選（えら）びますか。", qRomaji:"Fukusou wa dou yatte erabimasu ka.", qMeaning:"Bạn chọn trang phục như thế nào?",
+   a:"その日（ひ）の気温（きおん）に応（おう）じて、服装（ふくそう）を選（えら）びます。", aRomaji:"Sono hi no kion ni oujite, fukusou wo erabimasu.", aMeaning:"Tôi chọn trang phục tùy theo nhiệt độ của ngày hôm đó."},
 
   // 04 - Mua sắm
   {section:"Mua sắm",q:"これはいくらですか。", qRomaji:"Kore wa ikura desu ka", qMeaning:"Cái này giá bao nhiêu vậy?",
@@ -513,6 +540,15 @@ const DATA = [
   {section:"Mua sắm", grammar:"～どころか – chứ đừng nói đến, huống chi",
   q:"割引（わりびき）どころか、今日（きょう）は値上（ねあ）がりしていますよ。", qRomaji:"Waribiki dokoro ka, kyou wa neagari shite imasu yo", qMeaning:"Đừng nói giảm giá, hôm nay còn tăng giá nữa đó.",
    a:"え、本当（ほんとう）ですか。それは知（し）りませんでした。", aRomaji:"E, hontou desu ka. Sore wa shirimasen deshita", aMeaning:"Ơ, thật vậy sao? Tôi không biết luôn."},
+  {section:"Mua sắm", grammar:"～ばかりに – chỉ vì... mà dẫn đến hậu quả xấu",
+  q:"このシャツ、安（やす）かったばかりに、一度（いちど）洗（あら）っただけで色（いろ）が落（お）ちてしまったんですが。", qRomaji:"Kono shatsu, yasukatta bakari ni, ichido aratta dake de iro ga ochite shimatta n desu ga", qMeaning:"Cái áo này, chỉ vì rẻ mà mới giặt một lần đã bị phai màu rồi.",
+   a:"申（もう）し訳（わけ）ございません、交換（こうかん）させていただきます。", aRomaji:"Moushiwake gozaimasen, koukan sasete itadakimasu", aMeaning:"Em xin lỗi ạ, để em đổi cái khác cho quý khách."},
+  {section:"Mua sắm", grammar:"～ざるを得ない – không thể không, buộc phải",
+  q:"このセーター、予算（よさん）を超（こ）えていましたが、必要（ひつよう）だったので買（か）わざるを得（え）ませんでした。", qRomaji:"Kono seetaa, yosan o koete imashita ga, hitsuyou datta node kawazaru o emasen deshita", qMeaning:"Cái áo len này vượt ngân sách nhưng vì cần thiết nên tôi buộc phải mua.",
+   a:"そうですか、でも品質（ひんしつ）がいいので長（なが）く使（つか）えますよ。", aRomaji:"Sou desu ka, demo hinshitsu ga ii node nagaku tsukaemasu yo", aMeaning:"Vậy ạ, nhưng chất lượng tốt nên dùng được lâu đó ạ."},
+  {section:"Mua sắm", grammar:"～てはいられない – không thể cứ mãi...",
+  q:"セールが今日（きょう）までなので、のんびり選（えら）んではいられません。早（はや）く決（き）めないと。", qRomaji:"Seeru ga kyou made na node, nonbiri erande wa iraremasen. Hayaku kimenai to", qMeaning:"Vì sale chỉ đến hôm nay nên không thể cứ thong thả chọn mãi được. Phải quyết nhanh thôi.",
+   a:"そうですね、人気（にんき）商品（しょうひん）はすぐ売（う）り切（き）れてしまいますよ。", aRomaji:"Sou desu ne, ninki shouhin wa sugu urikirete shimaimasu yo", aMeaning:"Đúng vậy đó, hàng hot là hết hàng nhanh lắm ạ."},
 
   // 05 - Nhà hàng & gọi món
   {section:"Nhà hàng & gọi món",q:"今晩（こんばん）7時（しちじ）に2名（にめい）で予約（よやく）したいのですが。", qRomaji:"Konban shichiji ni nimei de yoyaku shitai no desu ga", qMeaning:"Tôi muốn đặt bàn cho 2 người lúc 7 giờ tối nay.",
@@ -564,6 +600,15 @@ const DATA = [
   {section:"Nhà hàng & gọi món", grammar:"～はずがない – không thể nào",
   q:"この量（りょう）でこんなに安（やす）いはずがないと思（おも）っていました。", qRomaji:"Kono ryou de konna ni yasui hazu ga nai to omotte imashita", qMeaning:"Tôi cứ nghĩ khẩu phần nhiều thế này thì không thể nào rẻ vậy được.",
    a:"今（いま）だけのランチ限定価格（げんていかかく）なんですよ。", aRomaji:"Ima dake no ranchi genteikakaku nan desu yo", aMeaning:"Đây là giá giới hạn chỉ dành cho bữa trưa hôm nay thôi ạ."},
+  {section:"Nhà hàng & gọi món", grammar:"～かねない – có thể dẫn đến điều không hay",
+  q:"このお肉（にく）、生焼（なまや）けだと食中毒（しょくちゅうどく）になりかねないので、しっかり火（ひ）を通（とお）してもらえますか。", qRomaji:"Kono oniku, namayake da to shokuchuudoku ni narikanenai node, shikkari hi o tooshite moraemasu ka", qMeaning:"Miếng thịt này nếu còn tái có thể dẫn đến ngộ độc thực phẩm nên làm chín kỹ giúp tôi được không?",
+   a:"かしこまりました、しっかり加熱（かねつ）いたします。", aRomaji:"Kashikomarimashita, shikkari kanetsu itashimasu", aMeaning:"Vâng ạ, em sẽ nấu chín kỹ cho."},
+  {section:"Nhà hàng & gọi món", grammar:"～かねる – khó mà, không tiện làm",
+  q:"メニューにない料理（りょうり）を特別（とくべつ）に作（つく）ってもらえますか。", qRomaji:"Menyuu ni nai ryouri o tokubetsu ni tsukutte moraemasu ka", qMeaning:"Có thể làm đặc biệt món không có trong menu cho tôi được không ạ?",
+   a:"申（もう）し訳（もう）ございませんが、そのご要望（ようぼう）にはお応（こた）えしかねます。", aRomaji:"Moushiwake gozaimasen ga, sono goyoubou ni wa okotae shikanemasu", aMeaning:"Xin lỗi quý khách nhưng yêu cầu đó chúng tôi khó mà đáp ứng được ạ."},
+  {section:"Nhà hàng & gọi món", grammar:"～ぬきで／ぬきに – bỏ qua, không tính",
+  q:"このセットメニューはデザート抜（ぬ）きで注文（ちゅうもん）できますか。", qRomaji:"Kono setto menyuu wa dezaato nuki de chuumon dekimasu ka", qMeaning:"Set này có thể gọi mà không tính món tráng miệng được không ạ?",
+   a:"はい、デザート抜（ぬ）きの場合（ばあい）は少（すこ）し安（やす）くなります。", aRomaji:"Hai, dezaato nuki no baai wa sukoshi yasuku narimasu", aMeaning:"Dạ được ạ, nếu bỏ tráng miệng thì giá sẽ rẻ hơn một chút."},
 
   // 06 - Hỏi đường
   {section:"Hỏi đường",q:"すみません、駅（えき）はどこですか。", qRomaji:"Sumimasen, eki wa doko desu ka", qMeaning:"Xin lỗi, ga tàu ở đâu vậy ạ?",
@@ -615,6 +660,15 @@ const DATA = [
   {section:"Hỏi đường", grammar:"～はずがない – không thể nào",
   q:"地図（ちず）ではここのはずですが、こんな場所（ばしょ）に駅（えき）があるはずがありません。", qRomaji:"Chizu dewa koko no hazu desu ga, konna basho ni eki ga aru hazu ga arimasen", qMeaning:"Theo bản đồ thì phải ở đây, nhưng chỗ thế này thì không thể nào có ga tàu được.",
    a:"すみません、地図（ちず）の見方（みかた）が間違（まちが）っていたかもしれません。", aRomaji:"Sumimasen, chizu no mikata ga machigatte ita kamoshiremasen", aMeaning:"Xin lỗi, có lẽ tôi xem bản đồ sai rồi."},
+  {section:"Hỏi đường", grammar:"～際に – vào lúc, khi",
+  q:"駅（えき）に着（つ）いた際（さい）に、もう一度（いちど）電話（でんわ）してもらえますか。", qRomaji:"Eki ni tsuita sai ni, mou ichido denwa shite moraemasu ka", qMeaning:"Khi nào đến ga rồi thì gọi điện lại cho tôi lần nữa được không?",
+   a:"わかりました、駅（えき）に着（つ）いた際（さい）には必（かなら）ずご連絡（れんらく）します。", aRomaji:"Wakarimashita, eki ni tsuita sai ni wa kanarazu gorenraku shimasu", aMeaning:"Được ạ, khi tôi đến ga chắc chắn sẽ liên lạc ngay."},
+  {section:"Hỏi đường", grammar:"～につき – vì, do",
+  q:"この先（さき）は工事中（こうじちゅう）につき通行止（つうこうど）めと書（か）いてありますが、迂回路（うかいろ）はありますか。", qRomaji:"Kono saki wa koujichuu ni tsuki tsuukoudome to kaite arimasu ga, ukairo wa arimasu ka", qMeaning:"Phía trước có ghi do đang thi công nên cấm đi qua, vậy có đường vòng không ạ?",
+   a:"はい、右（みぎ）に曲（ま）がれば迂回路（うかいろ）があります。", aRomaji:"Hai, migi ni magareba ukairo ga arimasu", aMeaning:"Dạ có, rẽ phải là có đường vòng ạ."},
+  {section:"Hỏi đường", grammar:"～も同然だ – chẳng khác gì, coi như",
+  q:"この目印（めじるし）の看板（かんばん）が見（み）えたら、もう着（つ）いたも同然（どうぜん）ですか。", qRomaji:"Kono mejirushi no kanban ga mietara, mou tsuita douzen desu ka", qMeaning:"Nếu thấy tấm biển làm mốc này rồi thì coi như đã tới nơi phải không ạ?",
+   a:"はい、そこまで来（く）れば着（つ）いたも同然（どうぜん）ですよ。", aRomaji:"Hai, soko made kureba tsuita douzen desu yo", aMeaning:"Đúng vậy, đến đó rồi thì coi như đã tới nơi rồi đó ạ."},
 
   // 07 - Điện thoại & đặt lịch
   {section:"Điện thoại & đặt lịch",q:"もしもし、田中（たなか）と申（もう）しますが、今（いま）お時間（じかん）よろしいでしょうか。", qRomaji:"Moshimoshi, Tanaka to moushimasu ga, ima ojikan yoroshii deshou ka.", qMeaning:"Alo, tôi là Tanaka, không biết bây giờ anh/chị có tiện nói chuyện không ạ?",
@@ -666,6 +720,15 @@ const DATA = [
   {section:"Điện thoại & đặt lịch", grammar:"～つつ – tuy... nhưng / vừa... vừa",
   q:"何度（なんど）もキャンセルして申（もう）し訳（わけ）ないと思（おも）いつつ、また日程（にってい）を変更（へんこう）したいのですが。", qRomaji:"Nando mo kyanseru shite moushiwakenai to omoitsutsu, mata nittei o henkou shitai no desu ga.", qMeaning:"Tuy nghĩ rằng đã hủy hẹn nhiều lần thật ngại quá, nhưng tôi vẫn muốn đổi lịch một lần nữa.",
    a:"大丈夫（だいじょうぶ）ですよ、お気（き）になさらないでください。", aRomaji:"Daijoubu desu yo, oki ni nasaranaide kudasai.", aMeaning:"Không sao đâu ạ, anh/chị đừng bận tâm quá."},
+  {section:"Điện thoại & đặt lịch", grammar:"～にもかかわらず – mặc dù, bất chấp",
+  q:"予約時間（よやくじかん）を過（す）ぎたにもかかわらず、お客様（きゃくさま）はまだいらっしゃいません。", qRomaji:"Yoyaku jikan o sugita nimo kakawarazu, okyakusama wa mada irasshaimasen.", qMeaning:"Mặc dù đã quá giờ hẹn nhưng khách vẫn chưa đến.",
+   a:"そうですか。もう少（すこ）しお待（ま）ちしてみましょう。", aRomaji:"Sou desu ka. Mou sukoshi omachi shite mimashou.", aMeaning:"Vậy à. Chúng ta chờ thêm một chút nữa xem sao."},
+  {section:"Điện thoại & đặt lịch", grammar:"たとえ～ても – dù có... đi nữa",
+  q:"たとえ担当者（たんとうしゃ）が不在（ふざい）でも、伝言（でんごん）を残（のこ）していただけますか。", qRomaji:"Tatoe tantousha ga fuzai demo, dengon o nokoshite itadakemasu ka.", qMeaning:"Dù người phụ trách có không có mặt đi nữa, anh/chị có thể để lại lời nhắn được không ạ?",
+   a:"もちろんです。ご用件（ようけん）をお伺（うかが）いします。", aRomaji:"Mochiron desu. Goyouken o oukagai shimasu.", aMeaning:"Được ạ. Tôi xin nghe nội dung cần trao đổi."},
+  {section:"Điện thoại & đặt lịch", grammar:"～てからでないと – nếu không... trước thì không được",
+  q:"上司（じょうし）に確認（かくにん）してからでないと、予約（よやく）をお受（う）けできません。", qRomaji:"Joushi ni kakunin shite kara de nai to, yoyaku o ouke dekimasen.", qMeaning:"Nếu không xác nhận với cấp trên trước thì tôi không thể nhận đặt lịch được ạ.",
+   a:"わかりました。確認（かくにん）が終（お）わったら、ご連絡（れんらく）ください。", aRomaji:"Wakarimashita. Kakunin ga owattara, gorenraku kudasai.", aMeaning:"Tôi hiểu rồi. Khi nào xác nhận xong thì liên hệ lại cho tôi nhé."},
 
   // 08 - Bệnh viện & sức khỏe
   {section:"Bệnh viện & sức khỏe",q:"どうしましたか。", qRomaji:"Dou shimashita ka.", qMeaning:"Bạn thấy sao rồi, bị làm sao vậy?",
@@ -718,6 +781,15 @@ const DATA = [
   {section:"Bệnh viện & sức khỏe", grammar:"～てしかたがない – ...quá chừng, không chịu nổi",
   q:"昨日（きのう）から頭（あたま）が痛（いた）くてしかたがないです。", qRomaji:"Kinou kara atama ga itakute shikata ga nai desu.", qMeaning:"Từ hôm qua đến giờ đầu tôi đau không chịu nổi.",
    a:"それはひどいですね。すぐ病院（びょういん）で診（み）てもらったほうがいいですよ。", aRomaji:"Sore wa hidoi desu ne. Sugu byouin de mite moratta hou ga ii desu yo.", aMeaning:"Vậy thì nặng thật đấy. Anh/chị nên đến bệnh viện khám ngay thì hơn."},
+  {section:"Bệnh viện & sức khỏe", grammar:"～ながらも – tuy... nhưng vẫn",
+  q:"熱（ねつ）があると知（し）りながらも、大事（だいじ）な会議（かいぎ）があるので出勤（しゅっきん）しました。", qRomaji:"Netsu ga aru to shirinagara mo, daiji na kaigi ga aru node shukkin shimashita.", qMeaning:"Tuy biết mình đang sốt nhưng vì có cuộc họp quan trọng nên tôi vẫn đi làm.",
+   a:"それは無理（むり）しすぎですよ。体（からだ）を大切（たいせつ）にしてください。", aRomaji:"Sore wa muri shisugi desu yo. Karada o taisetsu ni shite kudasai.", aMeaning:"Vậy là cố quá sức rồi đấy. Anh/chị giữ gìn sức khỏe nhé."},
+  {section:"Bệnh viện & sức khỏe", grammar:"～かのように – như thể là",
+  q:"彼（かれ）は熱（ねつ）が高（たか）いのに、まるで何（なに）でもないかのように仕事（しごと）を続（つづ）けています。", qRomaji:"Kare wa netsu ga takai noni, marude nan demo nai ka no you ni shigoto o tsuzukete imasu.", qMeaning:"Anh ấy sốt cao vậy mà vẫn cứ tiếp tục làm việc như thể chẳng có chuyện gì.",
+   a:"それは心配（しんぱい）ですね。早（はや）く病院（びょういん）に行（い）くよう伝（つた）えたほうがいいですよ。", aRomaji:"Sore wa shinpai desu ne. Hayaku byouin ni iku you tsutaeta hou ga ii desu yo.", aMeaning:"Vậy thì đáng lo thật đấy. Nên bảo anh ấy đi bệnh viện sớm thì hơn."},
+  {section:"Bệnh viện & sức khỏe", grammar:"～てまで – đến mức phải...",
+  q:"無理（むり）をしてまで出勤（しゅっきん）する必要（ひつよう）はありますか。", qRomaji:"Muri o shite made shukkin suru hitsuyou wa arimasu ka.", qMeaning:"Có cần thiết phải cố đến mức đi làm như vậy không?",
+   a:"いいえ、そこまでする必要（ひつよう）はありません。今日（きょう）は休（やす）んでください。", aRomaji:"Iie, soko made suru hitsuyou wa arimasen. Kyou wa yasunde kudasai.", aMeaning:"Không, không cần phải làm đến mức đó đâu. Hôm nay anh/chị nghỉ ngơi đi."},
 
   // 09 - Giao thông
   {section:"Giao thông",q:"すみません、駅（えき）はどこですか。", qRomaji:"Sumimasen, eki wa doko desu ka.", qMeaning:"Xin lỗi, ga tàu ở đâu vậy ạ?",
@@ -769,6 +841,15 @@ const DATA = [
   {section:"Giao thông", grammar:"～てしょうがない – ...quá chừng, không chịu nổi",
   q:"終電（しゅうでん）がなかなか来（こ）なくて、待（ま）つのが嫌（いや）でしょうがないです。", qRomaji:"Shuuden ga nakanaka konakute, matsu no ga iya de shou ga nai desu.", qMeaning:"Chuyến tàu cuối mãi không đến, chờ đợi khó chịu không chịu nổi.",
    a:"わかります、遅（おそ）い時間（じかん）に待（ま）つのは辛（つら）いですよね。", aRomaji:"Wakarimasu, osoi jikan ni matsu no wa tsurai desu yo ne.", aMeaning:"Tôi hiểu mà, chờ vào giờ khuya thì mệt thật đấy."},
+  {section:"Giao thông", grammar:"～てからというもの – kể từ khi... thì",
+  q:"新（あたら）しい駅（えき）ができてからというもの、この辺（あた）りは便利（べんり）になりました。", qRomaji:"Atarashii eki ga dekite kara to iu mono, kono atari wa benri ni narimashita.", qMeaning:"Kể từ khi ga mới được xây xong thì khu vực này trở nên tiện lợi hẳn.",
+   a:"本当（ほんとう）ですね。通勤（つうきん）も楽（らく）になりました。", aRomaji:"Hontou desu ne. Tsuukin mo raku ni narimashita.", aMeaning:"Đúng vậy thật. Đi làm cũng thấy nhẹ nhàng hơn hẳn."},
+  {section:"Giao thông", grammar:"～はもとより – chưa nói đến... mà cả",
+  q:"この路線（ろせん）は平日（へいじつ）はもとより、週末（しゅうまつ）も混雑（こんざつ）します。", qRomaji:"Kono rosen wa heijitsu wa motoyori, shuumatsu mo konzatsu shimasu.", qMeaning:"Tuyến này chưa nói đến ngày thường, mà cả cuối tuần cũng đông đúc.",
+   a:"それは知（し）りませんでした。時間（じかん）をずらしたほうがいいですね。", aRomaji:"Sore wa shirimasen deshita. Jikan o zurashita hou ga ii desu ne.", aMeaning:"Tôi không biết điều đó đấy. Chắc nên tránh giờ cao điểm thì hơn."},
+  {section:"Giao thông", grammar:"～もかまわず – bất chấp, mặc kệ",
+  q:"彼（かれ）は雨（あめ）に濡（ぬ）れるのもかまわず、駅（えき）まで走（はし）って行（い）きました。", qRomaji:"Kare wa ame ni nureru no mo kamawazu, eki made hashitte ikimashita.", qMeaning:"Anh ấy bất chấp việc bị ướt mưa mà chạy thẳng đến ga.",
+   a:"終電（しゅうでん）に間（ま）に合（あ）ったのでしょうか。", aRomaji:"Shuuden ni maniatta no deshou ka.", aMeaning:"Không biết có kịp chuyến tàu cuối không nhỉ."},
 
   // 10 - Ngân hàng & hành chính
   {section:"Ngân hàng & hành chính",q:"すみません、口座（こうざ）を作（つく）りたいんですが。", qRomaji:"Sumimasen, kouza wo tsukuritain desu ga.", qMeaning:"Xin lỗi, tôi muốn mở tài khoản ngân hàng.",
@@ -821,6 +902,15 @@ const DATA = [
   {section:"Ngân hàng & hành chính", grammar:"～ことなく – mà không...",
   q:"番号札（ばんごうふだ）のおかげで、並（なら）ぶことなく順番（じゅんばん）を待（ま）てますね。", qRomaji:"Bangoufuda no okage de, narabu koto naku junban wo matemasu ne.", qMeaning:"Nhờ có phiếu số thứ tự nên không cần xếp hàng mà vẫn chờ đến lượt được nhỉ.",
    a:"そうですね、外（そと）で立（た）つことなく、椅子（いす）に座（すわ）って待（ま）てるのも助（たす）かります。", aRomaji:"Sou desu ne, soto de tatsu koto naku, isu ni suwatte materu no mo tasukarimasu.", aMeaning:"Đúng vậy, không phải đứng ngoài mà được ngồi ghế chờ cũng đỡ thật."},
+  {section:"Ngân hàng & hành chính", grammar:"～も～なら～も – vừa... vừa, cả... lẫn",
+  q:"今日（きょう）の銀行（ぎんこう）はどうでしたか。", qRomaji:"Kyou no ginkou wa dou deshita ka.", qMeaning:"Hôm nay đi ngân hàng thế nào rồi?",
+   a:"待（ま）ち時間（じかん）も待（ま）ち時間（じかん）なら、窓口（まどぐち）の対応（たいおう）も対応（たいおう）で、本当（ほんとう）に疲（つか）れました。", aRomaji:"Machijikan mo machijikan nara, madoguchi no taiou mo taiou de, hontou ni tsukaremashita.", aMeaning:"Thời gian chờ thì đã đủ mệt, mà thái độ phục vụ ở quầy cũng chẳng khá hơn, thực sự mệt mỏi."},
+  {section:"Ngân hàng & hành chính", grammar:"～代わりに – thay vì",
+  q:"窓口（まどぐち）が混（こ）んでいたので、どうしましたか。", qRomaji:"Madoguchi ga konde ita node, dou shimashita ka.", qMeaning:"Vì quầy đông quá nên bạn đã làm thế nào?",
+   a:"窓口（まどぐち）に並（なら）ぶ代（か）わりに、ATMで手続（てつづ）きをしました。", aRomaji:"Madoguchi ni narabu kawari ni, ATM de tetsuzuki wo shimashita.", aMeaning:"Thay vì xếp hàng ở quầy, tôi đã làm thủ tục bằng máy ATM."},
+  {section:"Ngân hàng & hành chính", grammar:"～せいか – có lẽ vì, không biết có phải vì",
+  q:"今日（きょう）は窓口（まどぐち）がいつもよりずいぶん混（こ）んでいますね。", qRomaji:"Kyou wa madoguchi ga itsumo yori zuibun konde imasu ne.", qMeaning:"Hôm nay quầy đông hơn hẳn mọi khi nhỉ.",
+   a:"月末（げつまつ）のせいか、振込（ふりこみ）や支払（しはら）いに来（く）る人（ひと）が多（おお）いです。", aRomaji:"Getsumatsu no sei ka, furikomi ya shiharai ni kuru hito ga ooi desu.", aMeaning:"Có lẽ vì là cuối tháng nên nhiều người đến chuyển khoản và thanh toán."},
 
   // 11 - Chuyển nhà & tìm phòng
   {section:"Chuyển nhà & tìm phòng",q:"すみません、この部屋（へや）を見（み）てみたいんですが。", qRomaji:"Sumimasen, kono heya wo mite mitain desu ga.", qMeaning:"Xin lỗi, tôi muốn xem thử phòng này.",
@@ -873,6 +963,15 @@ const DATA = [
   {section:"Chuyển nhà & tìm phòng", grammar:"～ことなく – mà không...",
   q:"引（ひ）っ越（こ）しの日（ひ）、トラブルなく終（お）わりましたか。", qRomaji:"Hikkoshi no hi, toraburu naku owarimashita ka.", qMeaning:"Ngày chuyển nhà, mọi thứ xong xuôi mà không có rắc rối gì chứ?",
    a:"はい、大（おお）きな問題（もんだい）が起（お）きることなく、無事（ぶじ）に終（お）わりました。", aRomaji:"Hai, ookina mondai ga okiru koto naku, buji ni owarimashita.", aMeaning:"Vâng, không xảy ra vấn đề gì lớn, mọi thứ suôn sẻ kết thúc rồi."},
+  {section:"Chuyển nhà & tìm phòng", grammar:"～上に – hơn nữa, thêm vào đó",
+  q:"この部屋（へや）、どうですか。", qRomaji:"Kono heya, dou desu ka.", qMeaning:"Phòng này thì thế nào?",
+   a:"日当（ひあ）たりがいい上（うえ）に、収納（しゅうのう）も多（おお）くて、とても気（き）に入（い）りました。", aRomaji:"Hiatari ga ii ue ni, shuunou mo ookute, totemo ki ni irimashita.", aMeaning:"Không chỉ ánh nắng tốt mà còn nhiều chỗ chứa đồ nữa, tôi rất ưng ý."},
+  {section:"Chuyển nhà & tìm phòng", grammar:"～きっかけに – nhân dịp, lấy làm cơ hội",
+  q:"どうして引（ひ）っ越（こ）しをすることにしたんですか。", qRomaji:"Doushite hikkoshi wo suru koto ni shitan desu ka.", qMeaning:"Sao bạn lại quyết định chuyển nhà vậy?",
+   a:"転職（てんしょく）をきっかけに、会社（かいしゃ）に近（ちか）い部屋（へや）を探（さが）すことにしました。", aRomaji:"Tenshoku wo kikkake ni, kaisha ni chikai heya wo sagasu koto ni shimashita.", aMeaning:"Nhân dịp chuyển việc, tôi đã quyết định tìm phòng gần công ty."},
+  {section:"Chuyển nhà & tìm phòng", grammar:"～ぬく – làm đến cùng, làm hết",
+  q:"引（ひ）っ越（こ）しの荷造（にづく）り、大変（たいへん）でしたか。", qRomaji:"Hikkoshi no nizukuri, taihen deshita ka.", qMeaning:"Việc đóng gói đồ chuyển nhà có vất vả không?",
+   a:"はい、大変（たいへん）でしたが、一人（ひとり）で最後（さいご）までやり抜（ぬ）きました。", aRomaji:"Hai, taihen deshita ga, hitori de saigo made yarinukimashita.", aMeaning:"Vâng, vất vả lắm nhưng tôi đã một mình làm đến cùng cho xong."},
 
   // 12 - Hội thoại công sở
   {section:"Hội thoại công sở",q:"おはようございます。今日（きょう）も一日（いちにち）よろしくお願（ねが）いします。", qRomaji:"Ohayou gozaimasu. Kyou mo ichinichi yoroshiku onegaishimasu.", qMeaning:"Chào buổi sáng. Hôm nay cũng mong mọi người giúp đỡ nhé.",
@@ -924,6 +1023,15 @@ const DATA = [
   {section:"Hội thoại công sở", grammar:"～ことなく – mà không...",
   q:"今日（きょう）は誰（だれ）にも邪魔（じゃま）されることなく、集中（しゅうちゅう）して作業（さぎょう）できました。", qRomaji:"Kyou wa dare ni mo jama sareru koto naku, shuuchuu shite sagyou dekimashita.", qMeaning:"Hôm nay tôi có thể tập trung làm việc mà không bị ai làm phiền cả.",
    a:"それはよかったですね。休（やす）むことなく頑張（がんば）りすぎないでくださいね。", aRomaji:"Sore wa yokatta desu ne. Yasumu koto naku ganbari suginaide kudasai ne.", aMeaning:"Vậy thì tốt quá. Nhưng đừng cố quá mà không nghỉ ngơi gì nhé."},
+  {section:"Hội thoại công sở", grammar:"～きる／きれない – hoàn thành trọn vẹn／không thể làm hết",
+  q:"今日（きょう）中（じゅう）に資料（しりょう）を全部（ぜんぶ）チェックできましたか。", qRomaji:"Kyoujuu ni shiryou wo zenbu chekku dekimashita ka.", qMeaning:"Bạn kiểm tra hết tài liệu trong hôm nay được chưa?",
+   a:"すみません、量（りょう）が多（おお）すぎて、今日中（きょうじゅう）にはチェックしきれませんでした。", aRomaji:"Sumimasen, ryou ga oosugite, kyoujuu ni wa chekku shikiremasendeshita.", aMeaning:"Xin lỗi, vì số lượng quá nhiều nên tôi không thể kiểm tra hết trong hôm nay."},
+  {section:"Hội thoại công sở", grammar:"～に越したことはない – không gì bằng, tốt nhất là",
+  q:"会議（かいぎ）の資料（しりょう）、早（はや）めに準備（じゅんび）したほうがいいですよね。", qRomaji:"Kaigi no shiryou, hayame ni junbi shita hou ga ii desu yo ne.", qMeaning:"Tài liệu cuộc họp thì nên chuẩn bị sớm hơn phải không nhỉ?",
+   a:"はい、何事（なにごと）も早（はや）めに準備（じゅんび）するに越（こ）したことはないですね。", aRomaji:"Hai, nanigoto mo hayame ni junbi suru ni koshita koto wa nai desu ne.", aMeaning:"Đúng vậy, việc gì cũng vậy, chuẩn bị sớm là tốt nhất còn gì."},
+  {section:"Hội thoại công sở", grammar:"～ことか – biết bao, biết chừng nào",
+  q:"今回（こんかい）のプロジェクト、無事（ぶじ）に終（お）わって本当（ほんとう）によかったですね。", qRomaji:"Konkai no purojekuto, buji ni owatte hontou ni yokatta desu ne.", qMeaning:"Dự án lần này kết thúc suôn sẻ, thật là tốt quá nhỉ.",
+   a:"ええ、この日（ひ）をどれだけ待（ま）ち望（のぞ）んだことか。", aRomaji:"Ee, kono hi wo dore dake machinozonda koto ka.", aMeaning:"Vâng, không biết tôi đã mong chờ ngày này biết bao nhiêu."},
 
   // 13 - 報連相 công sở
   {section:"報連相 công sở",q:"今（いま）、どんな仕事（しごと）をしていますか。", qRomaji:"Ima, donna shigoto o shiteimasu ka", qMeaning:"Bây giờ bạn đang làm công việc gì vậy?",
@@ -976,6 +1084,15 @@ const DATA = [
   {section:"報連相 công sở", grammar:"～がたい – khó mà, không thể",
   q:"今回（こんかい）のミスは、正直（しょうじき）理解（りかい）しがたいです。どうしてこうなったんですか。", qRomaji:"Konkai no misu wa, shoujiki rikai shigatai desu. Doushite kou nattan desu ka", qMeaning:"Lỗi lần này thật sự khó mà hiểu nổi. Sao lại thành ra thế này?",
    a:"申（もう）し訳（わけ）ありません。確認（かくにん）をしなかったのが原因（げんいん）で、言（い）い訳（わけ）しがたいミスです。", aRomaji:"Moushiwake arimasen. Kakunin o shinakatta no ga gen'in de, iiwake shigatai misu desu", aMeaning:"Em xin lỗi. Nguyên nhân là do đã không xác nhận, đây là lỗi khó mà biện minh được ạ."},
+  {section:"報連相 công sở", grammar:"～ものだから – chính vì vậy mà, tại vì",
+  q:"昨日（きのう）、なぜ報告（ほうこく）が遅（おく）れたんですか。", qRomaji:"Kinou, naze houkoku ga okuretan desu ka", qMeaning:"Hôm qua sao báo cáo lại bị trễ vậy?",
+   a:"急（きゅう）なトラブルが起（お）きたものだから、報告（ほうこく）が遅（おく）れてしまいました。", aRomaji:"Kyuu na toraburu ga okita mono da kara, houkoku ga okurete shimaimashita", aMeaning:"Chính vì đột nhiên xảy ra sự cố nên báo cáo bị trễ mất ạ."},
+  {section:"報連相 công sở", grammar:"～向け(に) – dành cho, hướng đến",
+  q:"この連絡（れんらく）マニュアルは誰（だれ）向（む）けに作（つく）られたんですか。", qRomaji:"Kono renraku manyuaru wa dare muke ni tsukuraretan desu ka", qMeaning:"Cuốn hướng dẫn liên lạc này được làm dành cho ai vậy?",
+   a:"これは新入社員（しんにゅうしゃいん）向（む）けに作（つく）られたマニュアルです。", aRomaji:"Kore wa shinnyuu shain muke ni tsukurareta manyuaru desu", aMeaning:"Đây là tài liệu hướng dẫn được làm dành cho nhân viên mới ạ."},
+  {section:"報連相 công sở", grammar:"～向き – phù hợp với, thích hợp cho",
+  q:"急（いそ）ぎの相談（そうだん）には、メールとチャットのどちらが向（む）きだと思（おも）いますか。", qRomaji:"Isogi no soudan ni wa, meeru to chatto no dochira ga muki da to omoimasu ka", qMeaning:"Với việc trao đổi gấp thì bạn thấy mail hay chat phù hợp hơn?",
+   a:"急（いそ）ぎの場合（ばあい）は、すぐ返事（へんじ）がもらえるチャットの方（ほう）が向（む）きだと思（おも）います。", aRomaji:"Isogi no baai wa, sugu henji ga moraeru chatto no hou ga muki da to omoimasu", aMeaning:"Trường hợp gấp thì mình nghĩ chat phù hợp hơn vì có thể nhận phản hồi ngay."},
 
   // 14 - Du lịch
   {section:"Du lịch",q:"すみません、部屋（へや）を予約（よやく）したいんですが。", qRomaji:"Sumimasen, heya o yoyaku shitain desu ga", qMeaning:"Xin lỗi, tôi muốn đặt phòng ạ.",
@@ -1027,6 +1144,15 @@ const DATA = [
   {section:"Du lịch", grammar:"～次第 – ngay khi vừa...",
   q:"ホテルに着（つ）き次第（しだい）、連絡（れんらく）してもらえますか。", qRomaji:"Hoteru ni tsuki shidai, renraku shite moraemasu ka", qMeaning:"Ngay khi đến khách sạn thì bạn liên lạc giúp mình nhé?",
    a:"はい、着（つ）き次第（しだい）すぐ連絡（れんらく）します。", aRomaji:"Hai, tsuki shidai sugu renraku shimasu", aMeaning:"Vâng, ngay khi đến em sẽ liên lạc ngay."},
+  {section:"Du lịch", grammar:"～気味 – có xu hướng hơi..., hơi bị",
+  q:"今回（こんかい）の旅行（りょこう）はスケジュールが詰（つ）まり気味（ぎみ）じゃないですか。", qRomaji:"Konkai no ryokou wa sukejuru ga tsumarigimi janai desu ka", qMeaning:"Chuyến du lịch lần này lịch trình có hơi dày quá không?",
+   a:"そうですね、ちょっと疲（つか）れ気味（ぎみ）なので、一日（いちにち）くらい休（やす）む日（ひ）を作（つく）りたいです。", aRomaji:"Sou desu ne, chotto tsukaregimi na node, ichinichi kurai yasumu hi o tsukuritai desu", aMeaning:"Đúng vậy, vì hơi có dấu hiệu mệt nên mình muốn có một ngày để nghỉ ngơi."},
+  {section:"Du lịch", grammar:"～っぽい – có vẻ, mang tính chất",
+  q:"あのホテルの部屋（へや）、写真（しゃしん）で見（み）ると古（ふる）っぽいですね。", qRomaji:"Ano hoteru no heya, shashin de miru to furuppoi desu ne", qMeaning:"Phòng khách sạn đó nhìn ảnh có vẻ hơi cũ nhỉ.",
+   a:"本当（ほんとう）ですね、でも口（くち）コミを見（み）ると意外（いがい）ときれいっぽいですよ。", aRomaji:"Hontou desu ne, demo kuchikomi o miru to igai to kireippoi desu yo", aMeaning:"Đúng thật, nhưng xem review thì có vẻ bất ngờ là khá đẹp đó."},
+  {section:"Du lịch", grammar:"～たて – vừa mới...xong",
+  q:"このパン、焼（や）きたてですか。すごくいい匂（にお）いがしますね。", qRomaji:"Kono pan, yakitate desu ka. Sugoku ii nioi ga shimasu ne", qMeaning:"Bánh mì này vừa mới nướng xong à? Thơm quá nhỉ.",
+   a:"はい、焼（や）きたてです。市場（いちば）で買（か）ったばかりなんです。", aRomaji:"Hai, yakitate desu. Ichiba de katta bakari nan desu", aMeaning:"Vâng, vừa mới nướng xong đó. Mình vừa mới mua ở chợ."},
 
   // 15 - Nêu ý kiến & lời khuyên
   {section:"Nêu ý kiến & lời khuyên",q:"この提案（ていあん）について、どう思（おも）いますか。", qRomaji:"Kono teian ni tsuite, dou omoimasu ka", qMeaning:"Bạn nghĩ sao về đề xuất này?",
@@ -1078,6 +1204,24 @@ const DATA = [
   {section:"Nêu ý kiến & lời khuyên", grammar:"～一方で – mặt khác",
   q:"新（あたら）しい提案（ていあん）に賛成（さんせい）する人（ひと）がいる一方（いっぽう）で、反対（はんたい）する人（ひと）もいますね。", qRomaji:"Atarashii teian ni sansei suru hito ga iru ippou de, hantai suru hito mo imasu ne", qMeaning:"Có người đồng ý với đề xuất mới, nhưng mặt khác cũng có người phản đối nhỉ.",
    a:"そうですね。メリットがある一方（いっぽう）で、リスクもあると思（おも）います。", aRomaji:"Sou desu ne. Meritto ga aru ippou de, risuku mo aru to omoimasu", aMeaning:"Đúng vậy. Một mặt có ưu điểm, mặt khác mình nghĩ cũng có rủi ro."},
+  {section:"Nêu ý kiến & lời khuyên", grammar:"～沿い – dọc theo",
+  q:"どこでゆっくり相談（そうだん）しましょうか。", qRomaji:"Doko de yukkuri soudan shimashou ka", qMeaning:"Mình nên trao đổi thong thả ở đâu nhỉ?",
+   a:"そうですね、川（かわ）沿（ぞ）いの道（みち）を歩（ある）きながら話（はな）しましょう。", aRomaji:"Sou desu ne, kawazoi no michi o arukinagara hanashimashou", aMeaning:"Vậy thì mình vừa đi dọc theo con đường ven sông vừa nói chuyện nhé."},
+  {section:"Nêu ý kiến & lời khuyên", grammar:"～通り(に) – đúng như, theo như",
+  q:"結局（けっきょく）、私（わたし）が言（い）った通（とお）りにしましたか。", qRomaji:"Kekkyoku, watashi ga itta toori ni shimashita ka", qMeaning:"Cuối cùng bạn có làm đúng như những gì mình nói không?",
+   a:"はい、アドバイスの通（とお）りにやってみたら、うまくいきました。", aRomaji:"Hai, adobaisu no toori ni yatte mitara, umaku ikimashita", aMeaning:"Vâng, mình làm đúng theo lời khuyên thì thấy ổn ạ."},
+  {section:"Nêu ý kiến & lời khuyên", grammar:"～わけにはいかない – không thể nào... được vì lý do nào đó",
+  q:"みんなが賛成（さんせい）しているから、あなたも賛成（さんせい）するんですか。", qRomaji:"Minna ga sansei shiteiru kara, anata mo sansei surun desu ka", qMeaning:"Vì mọi người đều đồng ý nên bạn cũng đồng ý theo à?",
+   a:"いいえ、内容（ないよう）に問題（もんだい）があるので、賛成（さんせい）するわけにはいきません。", aRomaji:"Iie, naiyou ni mondai ga aru node, sansei suru wake ni wa ikimasen", aMeaning:"Không, vì nội dung có vấn đề nên mình không thể nào đồng ý được."},
+  {section:"Nêu ý kiến & lời khuyên", grammar:"～とか – nghe nói, hình như",
+  q:"新（あたら）しいプランについて、何（なに）か聞（き）いていますか。", qRomaji:"Atarashii puran ni tsuite, nanika kiite imasu ka", qMeaning:"Về kế hoạch mới, bạn có nghe được gì không?",
+   a:"予算（よさん）が足（た）りないとか聞（き）きましたが、詳（くわ）しいことはわかりません。", aRomaji:"Yosan ga tarinai toka kikimashita ga, kuwashii koto wa wakarimasen", aMeaning:"Mình nghe nói hình như là do thiếu ngân sách, nhưng chi tiết thì không rõ."},
+  {section:"Nêu ý kiến & lời khuyên", grammar:"～という – nghe đồn là, được gọi là",
+  q:"あの部長（ぶちょう）はどんな人（ひと）ですか。", qRomaji:"Ano buchou wa donna hito desu ka", qMeaning:"Ông trưởng phòng đó là người thế nào?",
+   a:"意見（いけん）をはっきり言（い）う人（ひと）だという話（はなし）を聞（き）いたことがあります。", aRomaji:"Iken o hakkiri iu hito da to iu hanashi o kiita koto ga arimasu", aMeaning:"Mình từng nghe nói ông ấy là người nói ý kiến rất thẳng thắn."},
+  {section:"Nêu ý kiến & lời khuyên", grammar:"～に関する – liên quan đến (bổ nghĩa danh từ)",
+  q:"この提案（ていあん）に関（かん）する資料（しりょう）はありますか。", qRomaji:"Kono teian ni kansuru shiryou wa arimasu ka", qMeaning:"Có tài liệu liên quan đến đề xuất này không?",
+   a:"はい、コストに関（かん）する資料（しりょう）を用意（ようい）しました。", aRomaji:"Hai, kosuto ni kansuru shiryou o youi shimashita", aMeaning:"Vâng, mình đã chuẩn bị tài liệu liên quan đến chi phí ạ."},
 ];
 
 let order = [];
