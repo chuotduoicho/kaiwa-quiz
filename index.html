@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kaiwa Quiz">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="Quiz phan xa tieng Nhat offline: 414 cau hoi tren 16 chu de (phong van BrSE + doi song hang ngay, N4-N3), gan nhan ~100 mau ngu phap N3, co doc giong noi.">
+<meta name="description" content="Quiz phan xa tieng Nhat offline: 414 cau hoi tren 16 chu de, gan nhan ~100 mau ngu phap N3, co doc giong noi va tuy chon an/hien furigana.">
 <style>
   :root{
     --bg:#f7f5f2; --card:#ffffff; --ink:#1f2430; --sub:#6b7280;
@@ -101,6 +101,7 @@
   <div class="bar">
     <select id="sectionFilter"></select>
     <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <label class="auto-toggle" id="furiganaLabel"><input type="checkbox" id="furiganaToggle"> あ Hiện phiên âm</label>
       <label class="auto-toggle" id="autoSpeakLabel"><input type="checkbox" id="autoSpeakToggle"> 🔊 Tự động đọc</label>
       <button id="shuffleBtn">🔀 Xáo trộn</button>
       <span class="progress" id="progress"></span>
@@ -1247,6 +1248,7 @@ const els = {
   speakABtn: document.getElementById('speakABtn'),
   autoSpeakToggle: document.getElementById('autoSpeakToggle'),
   autoSpeakLabel: document.getElementById('autoSpeakLabel'),
+  furiganaToggle: document.getElementById('furiganaToggle'),
 };
 
 let currentItem = null;
@@ -1304,6 +1306,33 @@ if(els.autoSpeakToggle){
   els.autoSpeakToggle.addEventListener('change', () => saveAutoSpeakPref(els.autoSpeakToggle.checked));
 }
 
+// ---- Ẩn/hiện phiên âm (furigana) trong phần hiển thị (không ảnh hưởng giọng đọc) ----
+function removeFuriganaForDisplay(text){
+  // Chỉ xóa （...） khi nó nằm ngay sau 1 chữ Hán (furigana thật sự),
+  // giữ nguyên các chú thích khác trong ngoặc như （例：...）hay （trong taxi）
+  return (text || '').replace(/([一-鿿])（[^（）]*）/g, '$1');
+}
+
+function loadFuriganaPref(){
+  try{ return localStorage.getItem('kaiwa_show_furigana') === '1'; }catch(e){ return false; }
+}
+function saveFuriganaPref(v){
+  try{ localStorage.setItem('kaiwa_show_furigana', v ? '1' : '0'); }catch(e){}
+}
+function displayText(text){
+  return (els.furiganaToggle && els.furiganaToggle.checked) ? text : removeFuriganaForDisplay(text);
+}
+if(els.furiganaToggle){
+  els.furiganaToggle.checked = loadFuriganaPref();
+  els.furiganaToggle.addEventListener('change', () => {
+    saveFuriganaPref(els.furiganaToggle.checked);
+    if(currentItem){
+      els.q.textContent = displayText(currentItem.q);
+      els.a.textContent = displayText(currentItem.a);
+    }
+  });
+}
+
 function buildSectionOptions(){
   const sections = [...new Set(DATA.map(d => d.section))];
   els.sectionFilter.innerHTML = sections.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -1337,10 +1366,10 @@ function render(){
   els.sectionTag.textContent = item.section;
   if(item.grammar){ els.grammarTag.textContent = item.grammar; els.grammarTag.classList.remove('hidden'); }
   else { els.grammarTag.classList.add('hidden'); }
-  els.q.textContent = item.q;
+  els.q.textContent = displayText(item.q);
   els.qRomaji.textContent = item.qRomaji;
   els.qMeaning.textContent = item.qMeaning;
-  els.a.textContent = item.a;
+  els.a.textContent = displayText(item.a);
   els.aRomaji.textContent = item.aRomaji;
   els.aMeaning.textContent = item.aMeaning;
   els.answerBlock.classList.add('hidden');
